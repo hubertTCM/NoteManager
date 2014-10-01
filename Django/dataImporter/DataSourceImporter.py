@@ -1,6 +1,7 @@
 ﻿# -*- coding: utf-8 -*-
 import os
 import sys
+import Utils.Utility
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
     for i in range(levels):
@@ -26,32 +27,22 @@ class PersonImporter:
         return person
 
 class SourceImporter:
-    def __init__(self):
-        self._sourceInfoCreators = {}
-        self._sourceInfoCreators[u'book'] = self.__create_book_info__
-        self._sourceInfoCreators[u'web'] = self.__create_webInfo__
-        
-    def __create_webInfo__(self, sourceInfo):
-        web, isCreated = WebInfo.objects.get_or_create(url = sourceInfo[u'url'])
-        if (isCreated):
-            web.category = u'Web'
-            web.save()                    
-        return web
-
-         
-    #{u'category': u'Book', u'name': u'范中林六经辨证医案'}                     
-    def __create_book_info__(self, sourceInfo):
-        book, isCreated = Book.objects.get_or_create(title = sourceInfo[u'name'])
-        if (isCreated):
-            book.category = u'Book'
-            book.save()                    
-        return book
-    
     def import_source(self, sourceInfo):
-        if (not u'category' in sourceInfo):
-            return
-        category = sourceInfo[u'category'].lower()
-        if (category in self._sourceInfoCreators):
-            return self._sourceInfoCreators[category](sourceInfo)
-        return None
+        bookTitle = Utils.Utility.Utility.get_value('bookTitle', sourceInfo)#sourceInfo['bookTitle']
+        url = Utils.Utility.Utility.get_value('url', sourceInfo)#sourceInfo['url']
+        source = None
+        isCreated = False
+        
+        if (bookTitle and url):
+            source, isCreated = DataSource.objects.get_or_create(bookTitle = bookTitle, url = url)
+        else:
+            if bookTitle:
+                source, isCreated = DataSource.objects.get_or_create(bookTitle = bookTitle)
+            if url:
+                source, isCreated = DataSource.objects.get_or_create(url = url)
+                
+        if isCreated:
+            source.save()
+            
+        return source
         

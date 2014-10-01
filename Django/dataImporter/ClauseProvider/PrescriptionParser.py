@@ -139,7 +139,9 @@ class SingleComponentParser_jf:
         
         if self._component_adjustor:
             component = self._component_adjustor.adjust(component)
+            
         
+        print Utility.convert_dict_to_string(component)
         return component
     
 class PrescriptionParser:
@@ -185,6 +187,7 @@ class PrescriptionParser:
         '''
         if text.find(u'\u3002') >=0:
             return None
+        
         not_components = []
         not_components.append(u"土瓜根方（附方佚）")
         not_components.append(u"猪胆汁方（附方）")
@@ -217,13 +220,17 @@ class PrescriptionParser:
         
         if (len(components) == 0):
             print "*failed to get components from: " + text + '\n'
+            
         return components
         
     def get_prescriptions(self):
-        prescriptions = []# name, detail, composition, source    
+        clauseWithoutPrescription = self._source_text
+        prescriptions = []# name, detail, composition, source
         
         matches = re.findall(ur"\s*\n+(\W*\u65b9\s*\W*)", self._source_text, re.M) #u65b9:方
         if len(matches) > 0:
+            index = self._source_text.find(matches[0])
+            clauseWithoutPrescription = self._source_text[:index]
             prescription_text = matches[0].strip()
             
             prescription_contents = filter(lambda x: len(x) > 0, [item.strip() for item in prescription_text.split('\n')])
@@ -238,9 +245,9 @@ class PrescriptionParser:
                 
                 name = self.__get_name__(item, appendix_content)
                 if name:   
-                    if current_prescription and len(current_prescription['components'])>0:                  
-                        prescriptions.append(current_prescription)                        
-                    current_prescription = {'name':name, 'components':[]}               
+                    if current_prescription and len(current_prescription['components'])>0:
+                        prescriptions.append(current_prescription)
+                    current_prescription = {'name':name, 'components':[]}
                     continue
                 components = self.__parse_components__(item)
                 if components:
@@ -252,14 +259,15 @@ class PrescriptionParser:
                     
             if current_prescription and len(current_prescription['components']) > 0:
                 prescriptions.append(current_prescription)    
-        return prescriptions
+        return clauseWithoutPrescription, prescriptions
     
     
 def print_prescription(prescription): 
     print "name: " + prescription['name']
-    print "components:"  
+    components = "" 
     for component in prescription['components']:
-        Utility.convert_dict_to_string(component)
+        components += Utility.convert_dict_to_string(component) + ", "
+    print "components:" + components
     print "comment: " + prescription['comment']  
     
 def print_prescription_list(prescriptions):
@@ -301,6 +309,3 @@ if __name__ == "__main__":
         sp = SingleComponentParser_jf(item, ComponentAdjustor_jf(herb_adjustor))
         component = sp.get_component()
         print Utility.convert_dict_to_string(component)
-        
-        
-        

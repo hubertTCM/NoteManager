@@ -5,7 +5,6 @@ import os
 import re
 
 reload(sys)
-#sys.setdefaultencoding('utf-8')
 
 
 def append_ancestors_to_system_path(levels):

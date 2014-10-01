@@ -22,8 +22,9 @@ from TCM.models import *
 class HerbUtility:
     def __init__(self):
         self._herbs=[] 
+        self._all_herbAlias = HerbAlias.objects.all()
         self._herbs.extend([herb.name for herb in Herb.objects.all()])
-        self._herbs.extend([herb.name for herb in HerbAlias.objects.all()])
+        self._herbs.extend([herb.name for herb in self._all_herbAlias])
                 
     def get_all_herbs(self):
         return self._herbs
@@ -31,6 +32,13 @@ class HerbUtility:
     def is_herb(self, name):
         return name in self.get_all_herbs()
     
+    def get_herb_name(self, herbOrAlias):
+        herbs = self._all_herbAlias.filter(name = herbOrAlias)
+        if len(herbs)==1:
+            herbName = herbs[0].standardName.name
+            print herbOrAlias + " -> " + herbName
+            return herbName
+        return herbOrAlias
 
 class ItemAdjustor:
     def __init__(self, pattern, to_text_fetcher):

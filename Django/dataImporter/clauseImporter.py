@@ -5,7 +5,7 @@ from django.core.management import setup_environ
 
 from ClauseProvider.TreatiseOnFebrileDiseases import *
 from ClauseProvider.GoldenChamber import *
-from ClauseProvider.wbtb import wbtb_provider
+#from ClauseProvider.wbtb import wbtb_provider
 
 from dataImporter.Utils.Utility import *
 from dataImporter.Utils.HerbUtil import HerbUtility
@@ -31,20 +31,8 @@ setup_environ(TCM.settings)
 class SingleClauseImporter:
     def __init__(self, clause_data):
         self._prescription_data = clause_data
-        self._author_importer = PersonImporter()
         self._source_importer = SourceImporter()
         
-    def __import_category__(self, clause):
-        if not ('category' in self._prescription_data):
-            return
-        category, is_created = ClauseCategory.objects.get_or_create(name = self._prescription_data['category'])
-        if is_created:
-            category.save()
-        
-        reference, is_created = ClauseCategoryReference.objects.get_or_create(clause=clause, category=category)
-        if is_created:
-            reference.save()
-            
     def __get_data_source__(self):
         come_from = None
         if 'comeFrom' in self._prescription_data:
@@ -52,24 +40,36 @@ class SingleClauseImporter:
         return come_from
     
     def do_import(self):
-#         clause = Clause()      
-#         clause.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription_data, self._source_importer.import_source)
-#         clause.content = self._prescription_data[u'content']
-#         clause.index = self._prescription_data[u'index']
-#         clause.save()
+        clause = Clause()      
+        clause.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription_data, self._source_importer.import_source)
+        clause.content = self._prescription_data[u'content']
+        clause.index = self._prescription_data[u'index']
+        clause.save()
+        
+        section = Utility.get_value('section', self._prescription_data, None)
+        if (section):
+            clauseSection = ClauseSection()
+            clauseSection.clause = clause
+            clauseSection.section = section
+            clauseSection.save()
         
         prescriptions_importer = PrescriptionsImporter(self._prescription_data['prescriptions'])
-        prescriptions_importer.do_import()
+        prescriptions = prescriptions_importer.do_import()
         
-#         self.__import_category__(clause)
-
+        for prescription in prescriptions:
+            item = PrescriptionClauseConnection()
+            item.clause = clause
+            item.prescription = prescription
+            item.save()
+        
+        return clause
 
 class Importer:
     def __init__(self):
         self._providers = []
         self._providers.append(FebribleDiseaseProvider())
-        self._providers.append(GoldenChamberProvider())
-        self._providers.append(wbtb_provider(None))
+#         self._providers.append(GoldenChamberProvider())
+#         self._providers.append(wbtb_provider(None))
     
     def import_all_clauses(self):
         for source_provider in self._providers:
@@ -127,12 +127,11 @@ if __name__ == "__main__":
             message = message + "   source:"+prescription['_debug_source']  
         print message
         
-    process_all_components(print_component_info)
-                
-#     check_unimported_herb()
-    check_unit()
-    process_all_components(None)
+    #process_all_components(print_component_info)
+    #check_unimported_herb()
+    #check_unit()
+    #process_all_components(None)
     
-#     importer = Importer()
-#     importer.import_all_clauses()
+    importer = Importer()
+    importer.import_all_clauses()
     print "done"

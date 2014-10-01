@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
+
 import codecs
+
 import os
 import re
 import sys
 
 from PrescriptionParser import *
+
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
@@ -15,6 +20,8 @@ def append_ancestors_to_system_path(levels):
 append_ancestors_to_system_path(3)
 
 from dataImporter.Utils.Utility import *
+#sys.setdefaultencoding('utf-8')
+
 
 class FebribleDiseaseProvider:
     def __init__(self):
@@ -22,12 +29,12 @@ class FebribleDiseaseProvider:
     
     def __create_caluse__(self, index, item_contents):
         items = [item.strip() for item in item_contents if len(item.strip()) > 0]
-        comeFrom = {u'category': u'Book', u'name': u'伤寒论'} 
+        comeFrom = {u'bookTitle': u'伤寒论'} 
         content = ''
         if len(items) > 0:
             content = '\n'.join(items)
             parser = PrescriptionParser(content, u'方', QuantityAdjustor()) 
-            prescriptions = parser.get_prescriptions() 
+            content, prescriptions = parser.get_prescriptions() 
             for prescription in prescriptions:
                 prescription.update({'comeFrom' : comeFrom})           
             
@@ -57,13 +64,14 @@ class FebribleDiseaseProvider:
         clauses.append(self.__create_caluse__(index, item_contents))
         return clauses
 
-if __name__ == "__main__":
+
+if __name__ == "__main__": 
+    
     provider = FebribleDiseaseProvider()
     clauses = provider.get_all_clauses()    
     for item in clauses:
+        print item['content']
         print_prescription_list(item['prescriptions'])
-        
-#         for prescription in item['prescriptions']:
-#             for component in prescription['components']:
-#                 print component['unit']
+        print "=="
+          
     print "done"

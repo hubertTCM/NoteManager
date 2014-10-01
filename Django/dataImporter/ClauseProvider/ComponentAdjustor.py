@@ -99,7 +99,7 @@ class QuantityAdjustor:
                         component['unit'] = previous_unit
                 else:
                     previous_quantity = None
-                    previous_unit = None                     
+                    previous_unit = None
         components.reverse()
         return components
     
