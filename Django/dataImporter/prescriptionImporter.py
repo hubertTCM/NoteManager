@@ -76,7 +76,7 @@ class SinglePrescriptionImporter:
                 return
 
             db_prescription = Prescription()
-            db_prescription.category = 'Prescription'  
+            db_prescription.name = self._prescription['name']
             db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
             db_prescription.comment = self._prescription['comment']
             db_prescription.allHerbText = self._allHerbText
