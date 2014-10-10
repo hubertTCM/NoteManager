@@ -3,8 +3,8 @@ package com.hubert.notesmanager.ui;
 import java.util.List;
 
 import com.hubert.notesmanager.dal.imp.DataProvider;
+import com.hubert.notesmanager.dal.orm.ClauseEntity;
 import com.hubert.notesmanager.data.CategoryItem;
-import com.hubert.notesmanager.data.TiaoWen;
 
 import android.R;
 import android.content.Context;
@@ -15,21 +15,21 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.TextView;
 
-public class TiaoWenAdapter extends ArrayAdapter<TiaoWen>{
+public class TiaoWenAdapter extends ArrayAdapter<ClauseEntity>{
 	private LayoutInflater mInflater;
 	
 	public TiaoWenAdapter(Context context){
 		super(context, R.layout.simple_list_item_1);
 
 		DataProvider provider = new DataProvider(context);
-		super.addAll(provider.getTiaoWen());
+		super.addAll(provider.getTiaoWens());
 		
 		mInflater = LayoutInflater.from(context);
 	}
 
 	@Override
 	public View getView(int position, View convertView, ViewGroup parent) {
-		TiaoWen item = getItem(position);
+		ClauseEntity item = getItem(position);
 		TextView textView = null;
 //		ImageView itemIcon = null;
 		if(convertView == null){

@@ -5,14 +5,13 @@ import java.lang.reflect.Field;
 import com.hubert.notesmanager.R;
 import com.hubert.notesmanager.data.CategoryItem;
 
+import android.support.v4.widget.DrawerLayout;
 import android.app.Activity;
 import android.app.ActionBar;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;

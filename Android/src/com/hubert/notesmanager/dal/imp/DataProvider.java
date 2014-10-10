@@ -7,8 +7,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.hubert.notesmanager.dal.IDataProvider;
+import com.hubert.notesmanager.dal.orm.ClauseDao;
+import com.hubert.notesmanager.dal.orm.ClauseEntity;
 import com.hubert.notesmanager.data.CategoryItem;
-import com.hubert.notesmanager.data.TiaoWen;
 
 public class DataProvider implements IDataProvider{
 	private DatabaseHelper mDbHelper;
@@ -25,22 +26,11 @@ public class DataProvider implements IDataProvider{
 	}
 
 	@Override
-	public List<TiaoWen> getTiaoWen() {
+	public List<ClauseEntity> getTiaoWens() {
 		SQLiteDatabase database = mDbHelper.getReadableDatabase();
-		Cursor cursor = database.rawQuery("select * from TCM_clause", null);
+		ClauseDao dao = new ClauseDao(database);
 		
-		Vector<TiaoWen> items = new Vector<TiaoWen>();
-		for (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {
-		    // do what you need with the cursor here
-			TiaoWen item = new TiaoWen(cursor.getInt(0), cursor.getString(3));
-			items.add(item);
-		}
-		
-		//SQLiteQueryBuilder
-		//SQLiteQueryBuilder 
-		//db.op
-		// TODO Auto-generated method stub
-		return items;
+		return dao.loadAll();
 	}
 
 }
