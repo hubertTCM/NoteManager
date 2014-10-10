@@ -56,3 +56,9 @@ bin-release/
 
 #python
 .pyc
+
+#java
+bin/
+bin/classes
+bin/res
+generateCode
