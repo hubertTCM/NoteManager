@@ -138,6 +138,7 @@ class Helper:
         words.append("source")
         words.append("connection")
         words.append("detail")
+        words.append("treatment")
         
         self.wordsMap = {}
         for word in words:
@@ -147,7 +148,7 @@ class Helper:
         
         typeMap = {}
         typeMap["integer"] = "long"
-        typeMap["varchar"] = "Strring"
+        typeMap["varchar"] = "String"
         typeMap["text"] = "String"
         typeMap["real"] = "double"
         
@@ -315,8 +316,12 @@ class DaoCodeGenerator:
         entityClassNameTemplate = "<" + entityClassName + ">"
         
         temp.append("public List" + entityClassNameTemplate + " loadAll() {")
-        temp.append("\tVector" + entityClassNameTemplate + " items = new Vector" + entityClassNameTemplate + "();")
         temp.append("\tCursor cursor = mDatabase.rawQuery(\"select * from " + self.schema.getName() +"\", null);")
+        temp.append("\treturn loadAll(cursor);")
+        temp.append("}")
+        
+        temp.append("private List" + entityClassNameTemplate + " loadAll(Cursor cursor) {")
+        temp.append("\tVector" + entityClassNameTemplate + " items = new Vector" + entityClassNameTemplate + "();")
         temp.append("\tfor (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {")
         temp.append("\t\titems.add(" + self.__getCreateEntityFunctionName__() + "(cursor));")
         temp.append("\t}")
