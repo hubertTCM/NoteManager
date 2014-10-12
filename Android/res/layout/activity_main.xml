@@ -3,7 +3,7 @@
     android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.hubert.notesmanager.ui.MainActivity"
+    tools:context="com.hubert.notesmanager.ui.main.MainActivity"
     tools:ignore="MergeRootFrame" >
 
     <!--
@@ -30,7 +30,7 @@
 
     <fragment
         android:id="@+id/left_drawer"
-        android:name="com.hubert.notesmanager.ui.CategoryFragment"
+        android:name="com.hubert.notesmanager.ui.main.CategoryFragment"
         android:layout_width="@dimen/navigation_drawer_width"
         android:layout_height="match_parent"
         android:layout_gravity="start" />

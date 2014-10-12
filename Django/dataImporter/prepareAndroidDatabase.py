@@ -144,7 +144,7 @@ class Helper:
         for word in words:
             self.wordsMap[word] = self.convertFirstCharToUpper(word)
         self.wordsMap["yian"] = "YiAn"
-        self.wordsMap["_id"] = ""
+        self.wordsMap["_id"] = "Id"
         
         typeMap = {}
         typeMap["integer"] = "long"
@@ -317,14 +317,8 @@ class DaoCodeGenerator:
         
         temp.append("public List" + entityClassNameTemplate + " loadAll() {")
         temp.append("\tCursor cursor = mDatabase.rawQuery(\"select * from " + self.schema.getName() +"\", null);")
-        temp.append("\treturn loadAll(cursor);")
-        temp.append("}")
-        
-        temp.append("private List" + entityClassNameTemplate + " loadAll(Cursor cursor) {")
-        temp.append("\tVector" + entityClassNameTemplate + " items = new Vector" + entityClassNameTemplate + "();")
-        temp.append("\tfor (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {")
-        temp.append("\t\titems.add(" + self.__getCreateEntityFunctionName__() + "(cursor));")
-        temp.append("\t}")
+        temp.append("\tList" + entityClassNameTemplate + " items = loadAll(cursor);")
+        temp.append("\tcursor.close();")
         temp.append("\treturn items;")
         temp.append("}")
         
@@ -334,21 +328,24 @@ class DaoCodeGenerator:
     def __createLoad__(self, codes):
         column = self.schema.getPrimaryColumn()
         if not column:
-            return column
+            return codes
             
         temp = []
-        
         formalizedColumnName = self.helper.getFormalizedName(column.getName())
         formalizedColumnName = self.helper.convertFirstCharToLower(formalizedColumnName)
         javaType = self.helper.getJavaTypeName(column.getDbType())
         
-        temp.append("public " + self.entityGenerator.getClassName() + " load("  + javaType + " " + formalizedColumnName+ ") {")
-        sql = "\"select * from " + self.schema.getName() + " where " + column.getName() +" = ?\""
+        entityClassName = self.entityGenerator.getClassName()
         
+        temp.append("public " + entityClassName + " load("  + javaType + " " + formalizedColumnName+ ") {")
+        sql = "\"select * from " + self.schema.getName() + " where " + column.getName() +" = ?\""
         whereArgs = "new String[]{" + " new StringBuilder().append(" + formalizedColumnName +  ").toString() }"
         temp.append("\tString[] whereArgs = " + whereArgs + ";")
         temp.append("\tCursor cursor = mDatabase.rawQuery(" + sql + ", whereArgs);")
-        temp.append("\treturn " + self.__getCreateEntityFunctionName__() + "(cursor);")
+        temp.append("\tcursor.moveToFirst();")
+        temp.append("\t"  + entityClassName + " item= "+ self.__getCreateEntityFunctionName__() + "(cursor);")
+        temp.append("\tcursor.close();")
+        temp.append("\treturn item;")
         temp.append("}")
         
         codes.extend(["\t" + item for item in temp])
@@ -365,7 +362,7 @@ class DaoCodeGenerator:
     def __getCreateEntityFunctionName__(self):
         return "createEntity";
     
-    def __addConvertFunction__(self, codes):
+    def __addConvertFunctions__(self, codes):
         temp = []
         
         entityClass = self.entityGenerator.getClassName()
@@ -401,6 +398,18 @@ class DaoCodeGenerator:
         temp.append("")
         temp.append("\treturn " + entityObject + ";")
         temp.append("}")
+        temp.append("")
+        
+        
+        #loadAll
+        entityClassNameTemplate = "<" + entityClass + ">"
+        temp.append("private List" + entityClassNameTemplate + " loadAll(Cursor cursor) {")
+        temp.append("\tVector" + entityClassNameTemplate + " items = new Vector" + entityClassNameTemplate + "();")
+        temp.append("\tfor (cursor.moveToFirst(); !cursor.isAfterLast(); cursor.moveToNext()) {")
+        temp.append("\t\titems.add(" + self.__getCreateEntityFunctionName__() + "(cursor));")
+        temp.append("\t}")
+        temp.append("\treturn items;")
+        temp.append("}")
         
         codes.extend(["\t" + item for item in temp])
         return codes;
@@ -429,7 +438,7 @@ class DaoCodeGenerator:
         self.__addPublicFunctions__(codes)
         codes.append("")
         
-        self.__addConvertFunction__(codes)
+        self.__addConvertFunctions__(codes)
         codes.append("}")
         return codes
 
@@ -453,7 +462,7 @@ class CodeGenerator:
             codeFile.write("\n")
             
             for code in generator.generate():
-                codeFile.write(code + "\n")
+                codeFile.write(code.replace("\t", "    ") + "\n")
             codeFile.close()
 
     def generateCode(self):   

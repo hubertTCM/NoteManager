@@ -7,7 +7,7 @@
     android:choiceMode="singleChoice"
     android:divider="#c3c3c3"
     android:dividerHeight="0.5dp"
-    tools:context="com.hubert.notesmanager.ui.CategoryFragment">
+    tools:context="com.hubert.notesmanager.ui.main.CategoryFragment">
     
 
 </ListView>
