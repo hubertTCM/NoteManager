@@ -110,7 +110,7 @@ class Provider_fzl:
 			index = startContent.find(u'、') + 1
 			titileText = startContent[index:].strip()
 
-			consilia = {u'comeFrom': {u'category': u'Book', u'name': u'范中林六经辨证医案'}, u'author': u'范中林'}	
+			consilia = {u'bookTitle': u'范中林六经辨证医案'}
 			titleDetail = self._exact_title_information__(titileText)	
 			Utility.update_dict(consilia, titleDetail)	
 			Utility.update_dict(consilia, self.__create_consilia__(titileText, sourceText))

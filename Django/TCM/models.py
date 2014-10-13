@@ -26,19 +26,28 @@ class Disease(models.Model):
 class YiAnDetail(models.Model):
     order = models.IntegerField()
     yiAnId = models.IntegerField()
-    
     description = models.TextField(null = True)
-
     comments = models.TextField(null = True) 
-    
+    comeFrom = models.ForeignKey(DataSource, null = True)
     class Meta:
         unique_together = ['yiAnId', 'order'] # it is better to set primary key, however, it is not supported in django 1.4
     
-#处方： 麻黄10克 甘草30克 葱白60克 二剂
+class YiAnDiseaseConnection(models.Model):
+    yiAn = models.ForeignKey(YiAnDetail)
+    disease = models.ForeignKey(Disease)
+    class Meta:
+        unique_together = ['yiAn', 'disease'] # it is better to set primary key, however, it is not supported in django 1.4
+    
+class YiAnOwner(models.Model):
+    yiAn = models.ForeignKey(YiAnDetail)
+    author = models.ForeignKey(Person)
+    class Meta:
+        unique_together = ['yiAn', 'author'] 
 
+#处方： 麻黄10克 甘草30克 葱白60克 二剂
 class YiAnPrescription(models.Model): 
     yiAnDetail = models.ForeignKey(YiAnDetail, null = False)
-    
+    allHerbText = models.CharField(max_length=300, null = False) #used for search    
     unit = models.CharField(max_length=255, null = True)
     quantity = models.FloatField(null=True)
     howToUse = models.TextField(null=True)
@@ -57,20 +66,6 @@ class MedicalNote(models.Model):
     creationTime = models.DateField(null = True)
     comeFrom = models.ForeignKey(DataSource, null = True)
     
-    def json(self):
-        json_object = {}
-        json_object[u'id'] = self.id
-        json_object[u'author'] = self.author.name
-        json_object[u'title'] = self.title
-        json_object[u'content'] = self.content
-         
-        if (self.creationTime != None):
-            json_object[u'creationTime'] = str(self.creationTime)          
-        if (self.comeFrom):
-            json_object[u'source'] = self.comeFrom.category
-            json_object[u'source_id'] = self.comeFrom.id
-        return json_object
-    
 class TreatmentMethod(models.Model):
     name = models.CharField(max_length=255, primary_key=True)
 
@@ -79,9 +74,15 @@ class Clause(models.Model):
     index = models.IntegerField(null = False)
     content = models.TextField(null = False)
     
+class BookSection(models.Model):
+    name = models.CharField(max_length=255)
+    parent = models.ForeignKey('self')
+    class Meta:
+        unique_together = ['name', 'parent']
+    
 class ClauseSection(models.Model):
     clause = models.ForeignKey(Clause)
-    section = models.CharField(max_length=255)
+    section = models.ForeignKey(BookSection)
     class Meta:
         unique_together = ['section', 'clause']
     

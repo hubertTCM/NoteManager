@@ -139,6 +139,8 @@ class Helper:
         words.append("connection")
         words.append("detail")
         words.append("treatment")
+        words.append("book")
+        words.append("section")
         
         self.wordsMap = {}
         for word in words:
