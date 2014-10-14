@@ -51,6 +51,15 @@ class Provider_fzl:
 		
 	def _create_all_details__(self, which_time, sourceText, targetDetails):
 		index = sourceText.find(u'诊］', 3)
+# 		keywords = (u'［初诊］', u'［一诊］', u'［诊治］')
+# 		for keyword in keywords:
+# 			index = sourceText.find(keyword)
+# 			if(index >= 0):
+# 				break
+#  				consilia[u'description'] = content[:index]
+#  				content = content[index:]
+# 				print 'description:  ' + consilia['description'] 				
+#  				break
 		if (index > 0):
 			detailItem = self.__exact_detail__(which_time, sourceText[:index - 2].strip())		
 			targetDetails.append(detailItem)
@@ -64,17 +73,20 @@ class Provider_fzl:
 		keywords = (u'［初诊］', u'［一诊］', u'［诊治］')
 		
 		consilia = {}
-	
+		details = []
+		description = ""
 		for keyword in keywords:
 			index = content.find(keyword)
 			if(index >= 0):
-				consilia[u'description'] = content[:index]
+# 				consilia[u'description'] = content[:index]
+				description = content[:index]
 				content = content[index:]
 				#print 'description:  ' + consilia['description'] 				
 				break
 
-		details = []
 		self._create_all_details__(1, content.strip(), details)
+		Utility.apply_default_if_not_exist( details[0], {"description" : ""})
+		details[0]['description'] = description + details[0]['description']
 		consilia[u'details'] = details
 		return consilia
 	
@@ -98,6 +110,7 @@ class Provider_fzl:
 		content = sourceFile.read()
 		sourceFile.close()
 	
+		items = []
 		matches = re.findall(ur"(\d{1,2}\u3001.+)", content, re.M)
 		for i in range(len(matches)):
 			startContent = matches[i]
@@ -114,5 +127,27 @@ class Provider_fzl:
 			titleDetail = self._exact_title_information__(titileText)	
 			Utility.update_dict(consilia, titleDetail)	
 			Utility.update_dict(consilia, self.__create_consilia__(titileText, sourceText))
-			yield consilia
+			#yield consilia
+			items.append(consilia)
+			
+		return items
 
+if __name__ == "__main__":
+	provider = Provider_fzl()
+	items = provider.get_all_consilias()
+	
+	to_file = os.path.dirname(__file__) + '\\fzl_converted.txt'
+	file_writer = codecs.open(to_file, 'w', 'utf-8', 'ignore')
+	
+	detailDefault = {u'description' : "None", u'comments' : "None", "diagnosis" : "None", "comments" : "None"}
+	for item in items:
+		for detail in item['details']:
+			Utility.apply_default_if_not_exist(detail, detailDefault)
+			file_writer.write("index:" + str(detail[u'index']) + "\n")
+			file_writer.write("description:" + detail[u'description'] + "\n")
+			file_writer.write("diagnosis:" + detail[u'diagnosis'] + "\n")
+			file_writer.write("comments:" + detail[u'comments'] + "\n")
+			file_writer.write("**\n")
+	
+	file_writer.close()
+	print "done"
