@@ -47,6 +47,7 @@ class YiAnOwner(models.Model):
 #处方： 麻黄10克 甘草30克 葱白60克 二剂
 class YiAnPrescription(models.Model): 
     yiAnDetail = models.ForeignKey(YiAnDetail, null = False)
+    name = models.CharField(max_length=300, null = True)
     allHerbText = models.CharField(max_length=300, null = False) #used for search    
     unit = models.CharField(max_length=255, null = True)
     quantity = models.FloatField(null=True)

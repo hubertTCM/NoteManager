@@ -13,13 +13,14 @@ def append_ancestors_to_system_path(levels):
 append_ancestors_to_system_path(3)
 
 from dataImporter.Utils.Utility import *
+from dataImporter.PrescriptionParser.Parser import *
 
 class Provider_fzl:	
 	def __init__(self):
 		self._source_file_fullpath = os.path.dirname(__file__) + '\\fzl.txt'
 	
 	def __exact_detail_situation__(self, sourceText, targetDictionary):
-		diagnosis_keywords =[u'处方：', u'处方一：', u'处方: ']
+		diagnosis_keywords =[u'处方：', u'处方一：', u'处方: ', u'处方；']
 		index = -1
 		for keyword in diagnosis_keywords:
 			index = sourceText.find(keyword)
@@ -31,20 +32,27 @@ class Provider_fzl:
 				break
 		
 		if (index < 0):
-			targetDictionary[u'diagnosis'] = sourceText
+			targetDictionary[u'diagnosis'] = sourceText		
+		
+		targetDictionary['prescriptions'] = self._get_prescriptions_(targetDictionary['diagnosis'])
 			#print 'diagnosis:  ' + targetDictionary['diagnosis']
 			
 	def __exact_detail__(self, whichTime, sourceText):
-		comment_keywords = (u'［按语］', u'［辨证］')
-		
+		comment_keywords = (u'［辨证］', u'［按语］', u'［按语)')
+		index = -1
 		detail = {u'index': whichTime}
 		for keyword in comment_keywords:
-			index = sourceText.find(keyword)
-			if(index >= 0):
-				self.__exact_detail_situation__(sourceText[:index], detail)
-				detail[u'comments'] = sourceText[index:]
-				#print 'comment:  ' + detail['comments']				
-				return detail
+			temp_index = sourceText.find(keyword)
+			if temp_index < 0:
+				continue
+			if index < 0 or temp_index < index:
+				index = temp_index
+			
+		if(index >= 0):
+			self.__exact_detail_situation__(sourceText[:index], detail)
+			detail[u'comments'] = sourceText[index:]
+			#print 'comment:  ' + detail['comments']				
+			return detail
 			
 		self.__exact_detail_situation__(sourceText, detail)		
 		return detail
@@ -105,6 +113,9 @@ class Provider_fzl:
 		#print "** TCM: " + titleInfo['title'] 
 		return titleInfo
 	
+	def _get_prescriptions_(self, sourceText):
+		return []
+	
 	def get_all_consilias(self):			
 		sourceFile = codecs.open(self._source_file_fullpath, 'r', 'utf-8', 'ignore')
 		content = sourceFile.read()
@@ -143,10 +154,10 @@ if __name__ == "__main__":
 	for item in items:
 		for detail in item['details']:
 			Utility.apply_default_if_not_exist(detail, detailDefault)
-			file_writer.write("index:" + str(detail[u'index']) + "\n")
-			file_writer.write("description:" + detail[u'description'] + "\n")
+# 			file_writer.write("index:" + str(detail[u'index']) + "\n")
+# 			file_writer.write("description:" + detail[u'description'] + "\n")
 			file_writer.write("diagnosis:" + detail[u'diagnosis'] + "\n")
-			file_writer.write("comments:" + detail[u'comments'] + "\n")
+# 			file_writer.write("comments:" + detail[u'comments'] + "\n")
 			file_writer.write("**\n")
 	
 	file_writer.close()
