@@ -39,7 +39,7 @@ class SingleClauseImporter:
             return self._prescription_data['comeFrom']
         return come_from
     
-    def do_import(self):
+    def doImport(self):
         clause = Clause()      
         clause.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription_data, self._source_importer.import_source)
         clause.content = self._prescription_data[u'content']
@@ -76,7 +76,7 @@ class Importer:
             for clause in source_provider.get_all_clauses():
                 try:
                     importer = SingleClauseImporter(clause)
-                    importer.do_import()                
+                    importer.doImport()                
                 except Exception,ex:
                     print Exception,":",ex
     

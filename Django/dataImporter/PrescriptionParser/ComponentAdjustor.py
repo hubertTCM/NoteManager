@@ -52,17 +52,17 @@ class QuantityParser1:
         self._quantity = None
             
     def parse(self):
-        m = re.compile(ur"([\d]+)([^（(]*)").match(self._source_text)
+        m = re.compile(ur"([\d]+[.]?[\d]+)([^（(]*)").match(self._source_text)
         if m:
             self._quantity = m.group(1)
             self._unit = m.group(2)
         return self._quantity, self._unit       
 
-class QuantityParser:
+class QuantityParser2:
     def __init__(self, text):
         self._source_text = text.strip()
         self._unit = None
-        self._quantity = None
+        self._quantity = 0
         
     def __adjust__(self):
         pass
@@ -93,7 +93,6 @@ class QuantityParser:
                 self._quantity = Utility.convert_number(str_quantity)
                 self._quantity += 0.5
             
-        
         return self._quantity, self._unit       
      
 class QuantityAdjustor:    
@@ -124,6 +123,6 @@ if __name__ == "__main__":
               u"三分半"
              ]
     for item in items:
-        p =QuantityParser(item)
+        p =QuantityParser2(item)
         pairs = p.parse()
-        print pairs
+        print pairs[0], pairs[1]

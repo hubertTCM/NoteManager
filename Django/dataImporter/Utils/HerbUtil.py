@@ -26,13 +26,16 @@ class HerbUtility:
         self._herbs.extend([herb.name for herb in Herb.objects.all()])
         self._herbs.extend([herb.name for herb in self._all_herbAlias])
                 
-    def get_all_herbs(self):
+    def getAllHerbs(self):
         return self._herbs
     
-    def is_herb(self, name):
+    def isHerb(self, name):
         return name in self.get_all_herbs()
     
-    def get_herb_name(self, herbOrAlias):
+    def extractHerbsFromAbbreviation(self, abbreviation):
+        return [self.getHerbName(abbreviation)]
+    
+    def getHerbName(self, herbOrAlias):
         herbs = self._all_herbAlias.filter(name = herbOrAlias)
         if len(herbs)==1:
             herbName = herbs[0].standardName.name

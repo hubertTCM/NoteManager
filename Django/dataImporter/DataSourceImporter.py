@@ -18,8 +18,18 @@ import TCM.settings
 from TCM.models import *
 setup_environ(TCM.settings)
 
+class UnitImporter:
+    def doImport(self, name):   
+        if not name:
+            return None
+                
+        unit, is_created = HerbUnit.objects.get_or_create(name = name) 
+        if is_created:
+            unit.save()
+        return unit
+
 class PersonImporter:
-    def import_person(self, name):
+    def doImport(self, name):
         person, isCreated = Person.objects.get_or_create(name = name)
         if (isCreated):
             person.save()
@@ -27,7 +37,7 @@ class PersonImporter:
         return person
 
 class SourceImporter:
-    def import_source(self, sourceInfo):
+    def doImport(self, sourceInfo):
         bookTitle = Utils.Utility.Utility.get_value('bookTitle', sourceInfo)#sourceInfo['bookTitle']
         url = Utils.Utility.Utility.get_value('url', sourceInfo)#sourceInfo['url']
         source = None

@@ -18,29 +18,87 @@ from dataImporter.PrescriptionParser.Parser import *
 class Provider_fzl:	
 	def __init__(self):
 		self._source_file_fullpath = os.path.dirname(__file__) + '\\fzl.txt'
+		pattern = ur"(处方[一二三四五六七八九十]*)[:：；][ ]*([^处方]*)"
+		self.__prescritionNamePattern__ = re.compile(pattern)
+	
+	def _get_prescriptions_(self, sourceText):
+		items = filter(lambda(x):len(x) > 0, [item.strip() for item in sourceText.strip().split('\n')])
+		
+		filter1 = PrescriptionQuantityFilter1()
+		quantity = 0
+		unit = None
+		name = None
+		prescriptions = []
+		currentPrescription = None
+		for item in items:
+			m = self.__prescritionNamePattern__.match(item)	
+			if m:
+				if currentPrescription:
+					prescriptions.append(currentPrescription)
+				currentPrescription = {}
+
+				if m.group(1) != "处方":
+					name = m.group(1)
+				if len(m.group(2)) > 0:
+					name = m.group(2)
+				
+				if name:
+					currentPrescription['name'] = name
+				continue
+			
+			if 'comments' in currentPrescription:
+				currentPrescription['comments'] += "\n" + item
+				continue
+			
+			if not 'components' in currentPrescription:
+				quantity, unit, otherText = filter1.splitByQuantity(item)
+				parser1 = PrescriptionParser1([' '], otherText, ComponentParser1())
+				components = parser1.getComponents()
+				if len(components) > 0:
+					currentPrescription['components'] = components
+				if quantity > 0:
+					currentPrescription['quantity'] = quantity
+					currentPrescription['unit'] = unit
+				continue
+			if not 'quantity' in currentPrescription:
+				quantity, unit, otherText = filter1.splitByQuantity(item)
+				if quantity > 0:
+					currentPrescription['quantity'] = quantity
+					currentPrescription['unit'] = unit
+				else:
+					currentPrescription['comments'] = item
+					
+		if currentPrescription:
+			prescriptions.append(currentPrescription)
+		else:
+			print "**" + sourceText
+			
+		emptyPrescription = {"name":"", "comments":"", "quantity":0, "unit":""}
+		for prescription in prescriptions:
+			Utility.apply_default_if_not_exist(prescription, emptyPrescription)
+		return prescriptions
 	
 	def __exact_detail_situation__(self, sourceText, targetDictionary):
 		diagnosis_keywords =[u'处方：', u'处方一：', u'处方: ', u'处方；']
+		
+		targetDictionary[u'diagnosis'] = ""
 		index = -1
 		for keyword in diagnosis_keywords:
 			index = sourceText.find(keyword)
 			if(index >= 0):
 				targetDictionary[u'description'] = sourceText[:index]
 				targetDictionary[u'diagnosis'] = sourceText[index:]
-				#print 'description:  ' + targetDictionary['description']
-				#print 'diagnosis:  ' + targetDictionary['diagnosis']
 				break
 		
 		if (index < 0):
-			targetDictionary[u'diagnosis'] = sourceText		
+			targetDictionary[u'description'] = sourceText		
 		
 		targetDictionary['prescriptions'] = self._get_prescriptions_(targetDictionary['diagnosis'])
-			#print 'diagnosis:  ' + targetDictionary['diagnosis']
 			
 	def __exact_detail__(self, whichTime, sourceText):
 		comment_keywords = (u'［辨证］', u'［按语］', u'［按语)')
 		index = -1
-		detail = {u'index': whichTime}
+		detail = {u'order': whichTime}
 		for keyword in comment_keywords:
 			temp_index = sourceText.find(keyword)
 			if temp_index < 0:
@@ -50,8 +108,7 @@ class Provider_fzl:
 			
 		if(index >= 0):
 			self.__exact_detail_situation__(sourceText[:index], detail)
-			detail[u'comments'] = sourceText[index:]
-			#print 'comment:  ' + detail['comments']				
+			detail[u'comments'] = sourceText[index:]				
 			return detail
 			
 		self.__exact_detail_situation__(sourceText, detail)		
@@ -59,15 +116,6 @@ class Provider_fzl:
 		
 	def _create_all_details__(self, which_time, sourceText, targetDetails):
 		index = sourceText.find(u'诊］', 3)
-# 		keywords = (u'［初诊］', u'［一诊］', u'［诊治］')
-# 		for keyword in keywords:
-# 			index = sourceText.find(keyword)
-# 			if(index >= 0):
-# 				break
-#  				consilia[u'description'] = content[:index]
-#  				content = content[index:]
-# 				print 'description:  ' + consilia['description'] 				
-#  				break
 		if (index > 0):
 			detailItem = self.__exact_detail__(which_time, sourceText[:index - 2].strip())		
 			targetDetails.append(detailItem)
@@ -86,10 +134,8 @@ class Provider_fzl:
 		for keyword in keywords:
 			index = content.find(keyword)
 			if(index >= 0):
-# 				consilia[u'description'] = content[:index]
 				description = content[:index]
-				content = content[index:]
-				#print 'description:  ' + consilia['description'] 				
+				content = content[index:]			
 				break
 
 		self._create_all_details__(1, content.strip(), details)
@@ -100,22 +146,18 @@ class Provider_fzl:
 	
 	def _exact_title_information__(self, sourceText):
 		titleInfo = {}
-		#print "** title: " + sourceText
+		items = []
 		index = sourceText.find(u'(')
 		if (index < 0):
-			titleInfo[u'title'] = sourceText.strip()
+			items.append(sourceText.strip())
 		else:
 			toIndex = len(sourceText) - 1
-			titleInfo[u'title'] = sourceText[0:index].strip()
-			titleInfo[u'diseaseName'] = [item.strip() for item in sourceText[index+1:toIndex].split(u'、')]
-			#print "diseaseName: " +  " ## ".join(map(str, titleInfo['diseaseName']))			
-		
-		#print "** TCM: " + titleInfo['title'] 
+			items.extend([item.strip() for item in sourceText[index+1:toIndex].split(u'、')])
+			items.append(sourceText[0:index].strip())
+			
+		titleInfo[u'diseaseNames'] = filter(lambda(x):len(x) > 0, items)
 		return titleInfo
-	
-	def _get_prescriptions_(self, sourceText):
-		return []
-	
+		
 	def get_all_consilias(self):			
 		sourceFile = codecs.open(self._source_file_fullpath, 'r', 'utf-8', 'ignore')
 		content = sourceFile.read()
@@ -134,11 +176,10 @@ class Provider_fzl:
 			index = startContent.find(u'、') + 1
 			titileText = startContent[index:].strip()
 
-			consilia = {u'bookTitle': u'范中林六经辨证医案'}
+			consilia = {'comeFrom':{'bookTitle': u'范中林六经辨证医案'}, u'author':u'范中林'}
 			titleDetail = self._exact_title_information__(titileText)	
 			Utility.update_dict(consilia, titleDetail)	
 			Utility.update_dict(consilia, self.__create_consilia__(titileText, sourceText))
-			#yield consilia
 			items.append(consilia)
 			
 		return items
@@ -150,15 +191,28 @@ if __name__ == "__main__":
 	to_file = os.path.dirname(__file__) + '\\fzl_converted.txt'
 	file_writer = codecs.open(to_file, 'w', 'utf-8', 'ignore')
 	
+
 	detailDefault = {u'description' : "None", u'comments' : "None", "diagnosis" : "None", "comments" : "None"}
 	for item in items:
 		for detail in item['details']:
 			Utility.apply_default_if_not_exist(detail, detailDefault)
-# 			file_writer.write("index:" + str(detail[u'index']) + "\n")
-# 			file_writer.write("description:" + detail[u'description'] + "\n")
+			file_writer.write("index:" + str(detail[u'order']) + "\n")
+			file_writer.write("description:" + detail[u'description'] + "\n")
 			file_writer.write("diagnosis:" + detail[u'diagnosis'] + "\n")
-# 			file_writer.write("comments:" + detail[u'comments'] + "\n")
-			file_writer.write("**\n")
-	
+#  			file_writer.write("comments:" + detail[u'comments'] + "\n")
+
+# 			file_writer.write(detail[u'description'] + "\n")
+# 			file_writer.write("\n")
+# 			file_writer.write(detail[u'diagnosis'] + "\n")
+# 			file_writer.write("\n")
+# 			file_writer.write(detail[u'comments'] + "\n")
+# 			file_writer.write("\n")
+			for prescription in detail['prescriptions']:
+				file_writer.write(prescription["name"] + "\n")
+				#if 'components' in prescription:
+				for component in prescription['components']:
+					file_writer.write(Utility.convert_dict_to_string(component)+ "\n") 
+				file_writer.write(str(prescription["quantity"]) + " " + prescription["unit"] + "\n")
+				file_writer.write(prescription["comments"] + "\n")
 	file_writer.close()
 	print "done"

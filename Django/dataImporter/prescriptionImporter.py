@@ -31,7 +31,7 @@ class SinglePrescriptionImporter:
         self._allHerbText = ""
 
         for component in self._prescription['components']:
-            herbName = self._herb_utility.get_herb_name(component['medical'])
+            herbName = self._herb_utility.getHerbName(component['medical'])
             component['medical'] = herbName
             self._allHerbText += herbName + " "
             
@@ -59,7 +59,7 @@ class SinglePrescriptionImporter:
   
     def __import_composition__(self, db_prescription, component):
         try:
-            db_composition = PrescriptionComponent()
+            db_composition = PrescriptionComposition()
             db_composition.component = component['medical']
             db_composition.prescription = db_prescription
             db_composition.quantity = component['quantity']
@@ -70,14 +70,14 @@ class SinglePrescriptionImporter:
         except Exception,ex:
             print Exception,":",ex, "prescription: ",db_prescription.name, " medical: ",component['medical'], " quantity", component['quantity'], " unit", component['unit']
     
-    def do_import(self):
+    def doImport(self):
         try:
             if self.__is_imported__():
                 return
 
             db_prescription = Prescription()
             db_prescription.name = self._prescription['name']
-            db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
+            db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.doImport)
             db_prescription.comment = self._prescription['comment']
             db_prescription.allHerbText = self._allHerbText
             db_prescription.save()
@@ -101,7 +101,7 @@ class PrescriptionsImporter:
         for prescription in self._prescriptions:
             try:
                 importer = SinglePrescriptionImporter(prescription, herbUtility)
-                item = importer.do_import()
+                item = importer.doImport()
                 if item:
                     db_prescriptions.append(item)
             except Exception,ex:

@@ -47,13 +47,13 @@ class YiAnOwner(models.Model):
 #处方： 麻黄10克 甘草30克 葱白60克 二剂
 class YiAnPrescription(models.Model): 
     yiAnDetail = models.ForeignKey(YiAnDetail, null = False)
-    name = models.CharField(max_length=300, null = True)
+    name = models.CharField(max_length=300, null = True) #like 处方一
     allHerbText = models.CharField(max_length=300, null = False) #used for search    
     unit = models.CharField(max_length=255, null = True)
-    quantity = models.FloatField(null=True)
-    howToUse = models.TextField(null=True)
+    quantity = models.FloatField(null=True) #like 二付
+    comment = models.TextField(null=True)
     
-class YiAnComponent(models.Model):
+class YiAnComposition(models.Model):
     prescription = models.ForeignKey(YiAnPrescription, null = False)
     component = models.TextField(max_length=255, null=False)
     unit = models.ForeignKey(HerbUnit, null=True)
@@ -104,7 +104,7 @@ class Prescription(models.Model):
     comment = models.TextField(null=True)
     
 #Prescription may composite with prescription and herb. For example: 茵陈五苓散
-class PrescriptionComponent(models.Model):
+class PrescriptionComposition(models.Model):
     prescription = models.ForeignKey(Prescription, null=False)
     component = models.CharField(max_length=255, null=False)
     unit = models.ForeignKey(HerbUnit, null=True)

@@ -6,6 +6,9 @@ from django.core.management import setup_environ
 from ConsiliaProvider.provider_fzl import *
 from ConsiliaProvider.zmt import *
 from dataImporter.Utils.Utility import *
+from dataImporter.Utils.HerbUtil import HerbUtility
+
+from thirdParty.cnsort import cnsort
 
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
@@ -24,90 +27,146 @@ from TCM.models import *
 import TCM.settings
 setup_environ(TCM.settings)
 
-class SingleConsiliaImporter:
-    def __init__(self, consilia):
-        self._source_importer = SourceImporter()
-        self._consiliaInfo = consilia
-                    
-        defaultInfo = {u'title': u'unknown', u'description' : None, u'creationTime' : None}
-        Utility.apply_default_if_not_exist(self._consiliaInfo, defaultInfo)
+
+to_file = os.path.dirname(__file__) + '\\debug.txt'
+file_writer = codecs.open(to_file, 'w', 'utf-8', 'ignore')
+
+class YiAnPrescriptionImporter:
+    def __init__(self):
+        self.__unitImporter__ = UnitImporter()
+        self.__herbUtility__ = HerbUtility()
+    
+    def __getQuantity__(self, source):
+        if source > 0:
+            return source
+        return None
         
-        self._s_data_source = None
+    def __importComponent__(self, source, prescription):
+        composition = YiAnComposition()
+        composition.prescription = prescription
+        composition.component = source['medical']
+        composition.quantity = self.__getQuantity__(source['quantity'])
+        composition.unit = self.__unitImporter__.doImport(source['unit'])
+        composition.comment = source['comments']
+        composition.save()
+        return composition
+    def doImport(self, source, yiAnDetail):
+        emptyPrescription = {"name":"", "comments":"", "quantity":0, "unit":""}
+        Utility.apply_default_if_not_exist(source, emptyPrescription)
         
-    def __run_action_when_key_exists__(self, key, action):
-        return Utility.run_action_when_key_exists(key, self._consiliaInfo, action)
+        compositions = []
+        names = []
+        for item in source['components']:
+            herbs = self.__herbUtility__.extractHerbsFromAbbreviation(item['medical'])
+            for herb in herbs:
+                temp = item.copy()
+                temp['medical'] = herb
+                compositions.append(temp)
+                names.append(herb)
+        cnsort.cnsort(names)
+        
+        
+        yiAnPrescription = YiAnPrescription()
+        yiAnPrescription.yiAnDetail = yiAnDetail
+        yiAnPrescription.name = source["name"]
+        
+        yiAnPrescription.allHerbText = " ".join(names)
+        
+        yiAnPrescription.quantity = self.__getQuantity__(source['quantity'])
+        yiAnPrescription.unit = source['unit']
+        
+        yiAnPrescription.save()
+        
+        for component in compositions:
+            self.__importComponent__(component, yiAnPrescription)
+        return yiAnPrescription
+class SingleImporter:
+    def __init__(self):
+        self.__sourceImporter__ = SourceImporter()
+        self.__prescriptionImporter__ = YiAnPrescriptionImporter()
+        self.__yiAnId__ = 1
             
-    def __create_author__(self, authorName):
-        self._author = None 
-        self._author, isCreated = Person.objects.get_or_create(name = authorName)
+    def __getSource__(self, sourceInfo):
+        if not sourceInfo:
+            return None
+        return self.__sourceImporter__.doImport(sourceInfo)
+    
+    def __importAuthor__(self, authorName, yiAnDetail):
+        if not authorName:
+            return
+        
+        author, isCreated = Person.objects.get_or_create(name = authorName)
         if (isCreated):
-            self._author.save()
-                  
-    # invoke this function when consilia object is ready            
-    def __create_diseas_info__(self, diseasNames):
+            author.save()
+            
+        owner = YiAnOwner()
+        owner.yiAn = yiAnDetail
+        owner.author = author
+        owner.save()
+
+    def __importDiseas__(self, diseasNames, yiAnDetail):
         for diseasName in diseasNames:
             disease, isCreated = Disease.objects.get_or_create(name = diseasName)
             if (isCreated):
-                disease.category = u'Modern'
                 disease.save() 
-                
-            diseaseConnection = ConsiliaDiseaseConnection()
-            diseaseConnection.consilia = self._consiliaSummary
+            diseaseConnection = YiAnDiseaseConnection()
+            diseaseConnection.yiAn = yiAnDetail
             diseaseConnection.disease = disease
             diseaseConnection.save()
                 
-    def __create_consilia_summary__(self):
-        self._consiliaSummary = ConsiliaSummary()
-        self._consiliaSummary.author = self._author
-        self._consiliaSummary.comeFrom = self._s_data_source   
-        self._consiliaSummary.title = self._consiliaInfo[u'title'] 
-        self._consiliaSummary.description = self._consiliaInfo[u'description'] 
-        self._consiliaSummary.creationTime = self._consiliaInfo[u'creationTime'] 
-        self._consiliaSummary.save()
-        
-    def __create_consilia_detail__(self, source):
-        detail = ConsiliaDetail()
-        detail.consilia = self._consiliaSummary
-        detail.index = source[u'index']
+    def __importDetail__(self, source):
+        file_writer.write("yiAnId:" + str(self.__yiAnId__) + "  order: " + str(source[u'order']) + " description:" + source[u'description'] + "\n")
+        detail = YiAnDetail()
+        detail.yiAnId = self.__yiAnId__
+        detail.order = source[u'order']
         detail.description = source[u'description']
-        detail.diagnosis = source[u'diagnosis']
         detail.comments = source[u'comments']
-        detail.save()                
+        detail.comeFrom = self.__getSource__(self.__consiliaInfo__[u'comeFrom'])
+        detail.save()
         
-    def __create_consilia__(self):
-        self.__create_consilia_summary__()
+        for prescription in source['prescriptions']:
+            self.__prescriptionImporter__.doImport(prescription, detail)
         
-        detailDefault = {u'description' : None, u'comments' : None}
-        for sourceDetail in self._consiliaInfo[u'details']:
+        return detail
+        
+    def __importYiAn__(self):
+        detailDefault = {u'description' : None, u'comments' : None, 'prescriptions' : []}
+        firstItem = None
+        for sourceDetail in self.__consiliaInfo__[u'details']:
             Utility.apply_default_if_not_exist(sourceDetail, detailDefault)
-            self.__create_consilia_detail__(sourceDetail)
-                       
-    def upload_to_database(self):            
-        self.__run_action_when_key_exists__(u'author', self.__create_author__)
-        self._s_data_source = self.__run_action_when_key_exists__(u'comeFrom', self._source_importer.import_source)
+            detail = self.__importDetail__(sourceDetail)
+            if not firstItem:
+                firstItem = detail
         
-        self.__create_consilia__()
+        self.__importDiseas__(self.__consiliaInfo__['diseaseNames'], firstItem)
+        self.__importAuthor__(self.__consiliaInfo__['author'], firstItem)
         
-        # invoke after consilia is created            
-        self.__run_action_when_key_exists__(u'diseaseName', self.__create_diseas_info__)          
+        self.__yiAnId__ += 1    
+                   
+    def doImport(self, consilia): 
+        self.__consiliaInfo__ = consilia 
+        defaultInfo = { u'description' : None, u'comeFrom': None, u'author':None, u'diseaseNames':[]}
+        Utility.apply_default_if_not_exist(self.__consiliaInfo__, defaultInfo) 
+        self.__importYiAn__()
 
 class Importer:  
     def __init__(self):
         self._consiliaSources = []
         self._consiliaSources.append(Provider_fzl())
-        self._consiliaSources.append(Provider_zmt())  
+        #self._consiliaSources.append(Provider_zmt())  
         
-    def import_all_consilias(self):
+    def doImport(self):
+        impoter = SingleImporter()
         for provider in self._consiliaSources:
             for consilia in provider.get_all_consilias():
                 try:
-                    impoter = SingleConsiliaImporter(consilia)
-                    impoter.upload_to_database()             
+                    impoter.doImport(consilia)             
                 except Exception,ex:
                     print "***" + str(consilia)
                     print Exception,":",ex
+                    file_writer.write(str(ex) + "\n")
                     
 if __name__ == "__main__":
     importerInstance = Importer()
-    importerInstance.import_all_consilias()
+    importerInstance.doImport()
     print 'done'
