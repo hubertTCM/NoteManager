@@ -60,11 +60,9 @@ class YiAnPrescriptionImporter:
             herbs = self.__herbUtility__.extractHerbsFromAbbreviation(item['medical'])
             for herb in herbs:
                 temp = item.copy()
-                temp['medical'] = herb
                 compositions.append(temp)
                 names.append(herb)
         cnsort.cnsort(names)
-        
         
         yiAnPrescription = YiAnPrescription()
         yiAnPrescription.yiAnDetail = yiAnDetail
@@ -80,6 +78,7 @@ class YiAnPrescriptionImporter:
         for component in compositions:
             self.__importComponent__(component, yiAnPrescription)
         return yiAnPrescription
+    
 class SingleImporter:
     def __init__(self):
         self.__sourceImporter__ = SourceImporter()
