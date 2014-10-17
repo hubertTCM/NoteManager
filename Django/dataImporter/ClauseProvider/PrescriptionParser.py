@@ -223,7 +223,7 @@ class PrescriptionParser:
             
         return components
         
-    def get_prescriptions(self):
+    def extractPrescriptions(self):
         clauseWithoutPrescription = self._source_text
         prescriptions = []# name, detail, composition, source
         
@@ -259,7 +259,7 @@ class PrescriptionParser:
                     
             if current_prescription and len(current_prescription['components']) > 0:
                 prescriptions.append(current_prescription)    
-        return clauseWithoutPrescription, prescriptions
+        return clauseWithoutPrescription.strip(" \n"), prescriptions
     
     
 def print_prescription(prescription): 

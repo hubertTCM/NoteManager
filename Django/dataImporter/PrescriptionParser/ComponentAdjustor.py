@@ -52,7 +52,7 @@ class QuantityParser1:
         self._quantity = None
             
     def parse(self):
-        m = re.compile(ur"([\d]+[.]?[\d]+)([^（(]*)").match(self._source_text)
+        m = re.compile(ur"([\d]+[.]?[\d]*)([^（(]*)").match(self._source_text)
         if m:
             self._quantity = m.group(1)
             self._unit = m.group(2)

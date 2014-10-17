@@ -25,25 +25,25 @@ from dataImporter.Utils.Utility import *
 
 class FebribleDiseaseProvider:
     def __init__(self):
-        self._source_file_fullpath = os.path.dirname(__file__) + '\\shl.txt'    
+        self.__sourceFile__ = os.path.dirname(__file__) + '\\shl.txt'    
     
-    def __create_caluse__(self, index, item_contents):
+    def __createClause__(self, index, item_contents):
         items = [item.strip() for item in item_contents if len(item.strip()) > 0]
         comeFrom = {u'bookTitle': u'伤寒论'} 
         content = ''
         if len(items) > 0:
             content = '\n'.join(items)
             parser = PrescriptionParser(content, u'方', QuantityAdjustor()) 
-            content, prescriptions = parser.get_prescriptions() 
+            content, prescriptions = parser.extractPrescriptions() 
             for prescription in prescriptions:
                 prescription.update({'comeFrom' : comeFrom})           
             
         return {'index':index, 'content':content, 'prescriptions':prescriptions, 'comeFrom' : comeFrom}
     
-    def get_all_clauses(self):
+    def getAllClauses(self):
         clauses = []
         
-        shl = codecs.open(self._source_file_fullpath, 'r', 'utf-8')
+        shl = codecs.open(self.__sourceFile__, 'r', 'utf-8')
         item_contents = []
         
         index = 0
@@ -51,7 +51,7 @@ class FebribleDiseaseProvider:
             matches = re.findall(ur"\s*[\u4e00\u4e8c\u4e09\u56db\u4e94\u516d\u4e03\u516b\u4e5d\u96f6]{1,3}\u3001", line)
             if len(matches) > 0 and line.strip().index(u'\u3001') < 4:
                 if (len(item_contents) > 0):
-                    clauses.append(self.__create_caluse__(index, item_contents))
+                    clauses.append(self.__createClause__(index, item_contents))
                 index += 1
                 item_contents = []
                 
@@ -61,17 +61,20 @@ class FebribleDiseaseProvider:
                 
         shl.close() 
         
-        clauses.append(self.__create_caluse__(index, item_contents))
+        clauses.append(self.__createClause__(index, item_contents))
         return clauses
 
 
-if __name__ == "__main__": 
+if __name__ == "__main__":     
+    debugFile = os.path.dirname(__file__) + '\\debug.txt'
+    debugWriter = codecs.open(debugFile, 'w', 'utf-8', 'ignore')
     
     provider = FebribleDiseaseProvider()
-    clauses = provider.get_all_clauses()    
+    clauses = provider.getAllClauses()    
     for item in clauses:
-        print item['content']
+        debugWriter.write(item['content'] + "\n")
         print_prescription_list(item['prescriptions'])
         print "=="
           
+    debugWriter.close()
     print "done"

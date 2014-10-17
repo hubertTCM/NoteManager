@@ -5,6 +5,7 @@ import sys
 from dataImporter.Utils.Utility import *
 from dataImporter.Utils.HerbUtil import HerbUtility
 from DataSourceImporter import *
+from thirdParty.cnsort import cnsort
 
 def append_ancestors_to_system_path(levels):
     parent = os.path.dirname(__file__)
@@ -23,24 +24,15 @@ from TCM.models import *
 setup_environ(TCM.settings)
 
 class SinglePrescriptionImporter:
-    def __init__(self, prescription, herbUtility):
-        self._prescription = prescription
-        self._source_importer = SourceImporter()
+    def __init__(self, herbUtility):
+        self.__sourceImporter__ = SourceImporter()
         self._herb_utility = herbUtility
         
-        self._allHerbText = ""
-
-        for component in self._prescription['components']:
-            herbName = self._herb_utility.getHerbName(component['medical'])
-            component['medical'] = herbName
-            self._allHerbText += herbName + " "
-            
-        self._allHerbText = self._allHerbText.strip()
         
     def __is_imported__(self):
         return False
 
-    def __get_unit__(self, name):   
+    def __getUnit__(self, name):   
         if not name:
             return None
                 
@@ -48,42 +40,43 @@ class SinglePrescriptionImporter:
         if is_created:
             unit.save()
         return unit
-    
-    def __get_prescription__(self, name):
-        prescription, is_created = Prescription.objects.get_or_create(name = name)
-        if is_created:
-            prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.import_source)
-            prescription.save()
-        return prescription
-           
   
-    def __import_composition__(self, db_prescription, component):
+    def __importComposition__(self, db_prescription, component):
         try:
             db_composition = PrescriptionComposition()
             db_composition.component = component['medical']
             db_composition.prescription = db_prescription
             db_composition.quantity = component['quantity']
-            db_composition.unit = self.__get_unit__(component['unit'])
+            db_composition.unit = self.__getUnit__(component['unit'])
             db_composition.comment = component['comments']
             db_composition.save()
 
         except Exception,ex:
             print Exception,":",ex, "prescription: ",db_prescription.name, " medical: ",component['medical'], " quantity", component['quantity'], " unit", component['unit']
     
-    def doImport(self):
+    def doImport(self, source):
         try:
             if self.__is_imported__():
                 return
+            
+            names = []
+            for item in source['components']: 
+                #keep original name in prescription, 
+                #ensure there is no error by conversion
+                herbs = self.__herbUtility__.extractHerbsFromAbbreviation(item['medical'])
+                for herb in herbs:
+                    names.append(herb)
+            cnsort.cnsort(names)
 
             db_prescription = Prescription()
-            db_prescription.name = self._prescription['name']
-            db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', self._prescription, self._source_importer.doImport)
-            db_prescription.comment = self._prescription['comment']
-            db_prescription.allHerbText = self._allHerbText
+            db_prescription.name = source['name']
+            db_prescription.comeFrom = Utility.run_action_when_key_exists(u'comeFrom', source, self.__sourceImporter__.doImport)
+            db_prescription.comment = source['comment']
+            db_prescription.allHerbText = " ".join(names)
             db_prescription.save()
 
             for component in self._prescription['components']:
-                self.__import_composition__(db_prescription, component)
+                self.__importComposition__(db_prescription, component)
 
             return db_prescription
         except Exception,ex:
@@ -96,7 +89,7 @@ class PrescriptionsImporter:
     def __init__(self, prescriptions):
         self._prescriptions = prescriptions
     
-    def do_import(self):
+    def doImport(self):
         db_prescriptions = []
         for prescription in self._prescriptions:
             try:

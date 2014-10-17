@@ -472,10 +472,10 @@ class CodeGenerator:
             self.__generateTableCode__(table)
 
 if __name__ == "__main__":
-#     android_db = create_android_database_file()
-#     update_to_android_schema(android_db)
+    android_db = create_android_database_file()
+    update_to_android_schema(android_db)
     
-    android_db = r'D:\Personal\NoteManager\Django\TCM\noteManager_android.db'
+#     android_db = r'D:\Personal\NoteManager\Django\TCM\noteManager_android.db'
     to_folder = r"D:\Personal\NoteManager\Android\generateCode\\"
     g = CodeGenerator(android_db, "com.hubert.notesmanager.dal.orm", to_folder)
     g.generateCode()

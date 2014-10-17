@@ -162,6 +162,11 @@ class Provider_fzl:
 		sourceFile = codecs.open(self._source_file_fullpath, 'r', 'utf-8', 'ignore')
 		content = sourceFile.read()
 		sourceFile.close()
+		
+		content = content.replace("1O", "10")
+		sourceFileWriter = codecs.open(self._source_file_fullpath, 'w', 'utf-8')
+		sourceFileWriter.write(content)
+		sourceFileWriter.close()
 	
 		items = []
 		matches = re.findall(ur"(\d{1,2}\u3001.+)", content, re.M)
@@ -196,9 +201,9 @@ if __name__ == "__main__":
 	for item in items:
 		for detail in item['details']:
 			Utility.apply_default_if_not_exist(detail, detailDefault)
-			file_writer.write("index:" + str(detail[u'order']) + "\n")
-			file_writer.write("description:" + detail[u'description'] + "\n")
-			file_writer.write("diagnosis:" + detail[u'diagnosis'] + "\n")
+# 			file_writer.write("index:" + str(detail[u'order']) + "\n")
+# 			file_writer.write("description:" + detail[u'description'] + "\n")
+# 			file_writer.write("diagnosis:" + detail[u'diagnosis'] + "\n")
 #  			file_writer.write("comments:" + detail[u'comments'] + "\n")
 
 # 			file_writer.write(detail[u'description'] + "\n")

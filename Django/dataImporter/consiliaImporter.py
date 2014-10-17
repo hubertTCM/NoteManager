@@ -50,17 +50,17 @@ class YiAnPrescriptionImporter:
         composition.comment = source['comments']
         composition.save()
         return composition
+    
     def doImport(self, source, yiAnDetail):
         emptyPrescription = {"name":"", "comments":"", "quantity":0, "unit":""}
         Utility.apply_default_if_not_exist(source, emptyPrescription)
         
-        compositions = []
         names = []
-        for item in source['components']:
+        for item in source['components']: 
+            #keep original name in prescription, 
+            #ensure there is no error by conversion
             herbs = self.__herbUtility__.extractHerbsFromAbbreviation(item['medical'])
             for herb in herbs:
-                temp = item.copy()
-                compositions.append(temp)
                 names.append(herb)
         cnsort.cnsort(names)
         
@@ -75,7 +75,7 @@ class YiAnPrescriptionImporter:
         
         yiAnPrescription.save()
         
-        for component in compositions:
+        for component in source['components']:
             self.__importComponent__(component, yiAnPrescription)
         return yiAnPrescription
     

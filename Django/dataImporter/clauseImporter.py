@@ -54,7 +54,7 @@ class SingleClauseImporter:
             clauseSection.save()
         
         prescriptions_importer = PrescriptionsImporter(self._prescription_data['prescriptions'])
-        prescriptions = prescriptions_importer.do_import()
+        prescriptions = prescriptions_importer.doImport()
         
         for prescription in prescriptions:
             item = PrescriptionClauseConnection()
@@ -71,7 +71,7 @@ class Importer:
 #         self._providers.append(GoldenChamberProvider())
 #         self._providers.append(wbtb_provider(None))
     
-    def import_all_clauses(self):
+    def doImport(self):
         for source_provider in self._providers:
             for clause in source_provider.get_all_clauses():
                 try:
@@ -133,5 +133,5 @@ if __name__ == "__main__":
     #process_all_components(None)
     
     importer = Importer()
-    importer.import_all_clauses()
+    importer.doImport()
     print "done"
