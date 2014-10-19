@@ -141,6 +141,7 @@ class Helper:
         words.append("treatment")
         words.append("book")
         words.append("section")
+        words.append("composition")
         
         self.wordsMap = {}
         for word in words:

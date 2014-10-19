@@ -1,0 +1,68 @@
+package com.hubert.notesmanager.ui.yiAn;
+
+import java.util.*;
+
+import com.hubert.notesmanager.R;
+import com.hubert.notesmanager.dal.DatabaseHelper;
+import com.hubert.notesmanager.dal.orm.*;
+import com.hubert.notesmanager.ui.prescription.PrescriptionActivity;
+
+import android.app.Activity;
+import android.content.*;
+import android.os.Bundle;
+import android.view.*;
+import android.view.View.OnClickListener;
+import android.widget.*;
+
+public class YiAnSummaryActivity extends Activity{
+    public YiAnSummaryActivity(){
+        super();
+        
+    }
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_yian_summary);
+        
+        setUp();
+    }
+    
+    private  void setUp(){
+        ListView listView = (ListView)findViewById(R.id.listview_yian);
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        YiAnDetailDao dao = new YiAnDetailDao(dbHelper.getReadableDatabase());
+        Vector<YiAnSummaryViewModel> models = new Vector<YiAnSummaryViewModel>();
+        for (YiAnDetailEntity entity : dao.loadFirst()){
+            models.add(new YiAnSummaryViewModel(dbHelper, entity));
+        }
+        ArrayAdapter<YiAnSummaryViewModel> adapter = new ArrayAdapter<YiAnSummaryViewModel>(this,android.R.layout.simple_list_item_2, models){
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent){
+                TwoLineListItem item;
+                if(convertView == null){
+                    LayoutInflater inflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    item = (TwoLineListItem)inflater.inflate(android.R.layout.simple_list_item_2, null);
+                    item.getText2().setOnClickListener(new OnClickListener(){
+                        @Override
+                        public void onClick(View paramView){
+                            YiAnSummaryViewModel data = (YiAnSummaryViewModel)paramView.getTag();
+                            Intent intent = new Intent(YiAnSummaryActivity.this, YiAnDetailActivity.class);
+                            intent.putExtra(YiAnDetailActivity.YIAN_ID, data.getId());
+                            intent.putExtra(YiAnDetailActivity.YIAN_NAME, data.getName());
+                            YiAnSummaryActivity.this.startActivity(intent);
+                        }
+                    });
+                }else{
+                    item = (TwoLineListItem)convertView;
+                }
+                YiAnSummaryViewModel data = getItem(position);
+                item.getText1().setText(data.getName());
+                item.getText2().setText(data.getSummary());
+                item.getText2().setTag(data);
+                return item;
+            }
+        };
+        listView.setAdapter(adapter);
+    }
+}

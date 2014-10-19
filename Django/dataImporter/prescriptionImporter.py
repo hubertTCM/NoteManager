@@ -26,7 +26,7 @@ setup_environ(TCM.settings)
 class SinglePrescriptionImporter:
     def __init__(self, herbUtility):
         self.__sourceImporter__ = SourceImporter()
-        self._herb_utility = herbUtility
+        self.__herbUtility__ = herbUtility
         
         
     def __is_imported__(self):
@@ -93,8 +93,8 @@ class PrescriptionsImporter:
         db_prescriptions = []
         for prescription in self._prescriptions:
             try:
-                importer = SinglePrescriptionImporter(prescription, herbUtility)
-                item = importer.doImport()
+                importer = SinglePrescriptionImporter(herbUtility)
+                item = importer.doImport(prescription)
                 if item:
                     db_prescriptions.append(item)
             except Exception,ex:

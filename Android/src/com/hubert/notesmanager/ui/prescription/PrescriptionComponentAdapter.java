@@ -43,8 +43,7 @@ public class PrescriptionComponentAdapter extends ArrayAdapter<PrescriptionCompo
         
         TextView txtComment = (TextView)convertView.findViewById(R.id.comment);
         txtComment.setText(item.getComment());
-        
-        
+
         return convertView;
     }
 
