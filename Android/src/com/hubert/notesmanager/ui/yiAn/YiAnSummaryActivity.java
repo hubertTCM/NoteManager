@@ -16,8 +16,6 @@ import android.widget.*;
 
 public class YiAnSummaryActivity extends Activity{
     public YiAnSummaryActivity(){
-        super();
-        
     }
     
     @Override
@@ -46,10 +44,11 @@ public class YiAnSummaryActivity extends Activity{
                     item.getText2().setOnClickListener(new OnClickListener(){
                         @Override
                         public void onClick(View paramView){
-                            YiAnSummaryViewModel data = (YiAnSummaryViewModel)paramView.getTag();
+                            YiAnSummaryViewModel summaryModel = (YiAnSummaryViewModel)paramView.getTag();
+                            YiAnDetailEntity entity = summaryModel.getEntity();
                             Intent intent = new Intent(YiAnSummaryActivity.this, YiAnDetailActivity.class);
-                            intent.putExtra(YiAnDetailActivity.YIAN_ID, data.getId());
-                            intent.putExtra(YiAnDetailActivity.YIAN_NAME, data.getName());
+                            intent.putExtra(YiAnDetailActivity.YIAN_ID, entity.getYiAnId());
+                            intent.putExtra(YiAnDetailActivity.YIAN_NAME, summaryModel.getName());
                             YiAnSummaryActivity.this.startActivity(intent);
                         }
                     });

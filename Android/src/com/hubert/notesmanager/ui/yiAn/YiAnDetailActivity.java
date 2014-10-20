@@ -58,7 +58,6 @@ public class YiAnDetailActivity extends Activity{
         if (detailModel.getPrescriptions().size() > 0){
             createButton(mLinearLayoutDetailsRoot);
         }
-        //createTextView(entity.getComments(), listviewDetails);
     }
     
     private void showPrescriptions(){
@@ -69,31 +68,46 @@ public class YiAnDetailActivity extends Activity{
         for (YiAnPrescriptionModel prescription : detailModel.getPrescriptions()){
             showPrescription(prescription);
         }
+
+        createTextView(detailModel.getEntity().getComments(), mLinearLayoutDetailsRoot);
         
         mCurrentOrder += 1;
         if (mCurrentOrder < mDetails.size()){
             showDescription();
         }
+        
     }
     
     private void showPrescription(YiAnPrescriptionModel prescription){
-       String name = prescription.getEntity().getName();
+       YiAnPrescriptionEntity prescriptionEntity = prescription.getEntity();
+       String name = prescriptionEntity.getName();
        if (!Util.isNullOrEmpty(name)){
            createTextView(name, mLinearLayoutDetailsRoot);
        }
        
-       String text = "";
+       String text = " ";
        for (YiAnCompositionEntity item : prescription.getCompositions()){
            text += " " + item.getComponent();
            if (item.getQuantity() > 0){
-               text += " " + Double.toString(item.getQuantity());
+               text += Double.toString(item.getQuantity());
            }
            if (!Util.isNullOrEmpty(item.getUnitId())){
-               text += " " + item.getUnitId();
+               text += item.getUnitId();
            }
            if (!Util.isNullOrEmpty(item.getComment())){
-               text += " " + item.getComment();
+               text += item.getComment();
            }
+       }
+       
+       if (prescriptionEntity.getQuantity() > 0){
+           text += " " + Double.toString(prescriptionEntity.getQuantity());
+       }
+       if (!Util.isNullOrEmpty(prescriptionEntity.getUnit())){
+           text += prescriptionEntity.getUnit();
+       }
+       
+       if (!Util.isNullOrEmpty(prescriptionEntity.getComment())){
+           text += "\n" + prescriptionEntity.getComment();
        }
        createTextView(text, mLinearLayoutDetailsRoot);
     }

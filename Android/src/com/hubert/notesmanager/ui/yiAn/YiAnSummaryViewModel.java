@@ -42,7 +42,7 @@ public class YiAnSummaryViewModel {
         return mSummary;
     }
     
-    public long getId(){
-        return mEntity.getId();
+    public YiAnDetailEntity getEntity(){
+        return mEntity;
     }
 }
