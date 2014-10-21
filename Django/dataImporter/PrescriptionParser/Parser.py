@@ -240,8 +240,8 @@ class PrescriptionQuantityFilter1:
 
 class NameCommentSpliter1:
     def __init__(self):
-        self.__nameCommentPattern__ = re.compile(ur"([^（(]+)[（(]([\W]+)[)）][:： ]")
-        self.__namePattern__ = re.compile(ur"([^（(]+)[:： ]")
+        self.__nameCommentPattern__ = re.compile(ur"([^（(]+)[（(]([\W]+)[)）][:：][ ]")
+        self.__namePattern__ = re.compile(ur"([^（(]+)[:：][ ]")
         
     def split(self, text):
         m = self.__nameCommentPattern__.match(text)
@@ -316,7 +316,8 @@ if __name__ == "__main__":
 #         for component in parser1.getComponents(componentsText):
 #             print Utility.convert_dict_to_string(component)
         
-        texts =[ ur"处方二： 鲜九节菖蒲根15克（煎汤送服神犀丹一丸 犀角末0.6克 分二次汤药送下） 一付。",
+        texts =[ ur"麦门冬10克，沙参10克，五味子6克，蝉衣6克，僵蚕10克，片姜黄6克，柴胡6克，黄芩6克，白芍10克，丝瓜络，桑枝， 七剂",
+                 ur"处方二： 鲜九节菖蒲根15克（煎汤送服神犀丹一丸 犀角末0.6克 分二次汤药送下） 一付。",
                  ur"处方：生白芍15克，天麦冬各6克，沙参20克，元参15克，石斛10克，前胡6克，黄芩10克，杏仁10克，黛蛤散12克(包)，川贝粉3克(冲)，羚羊角粉0.5克(冲)，服二剂"
                  ]
         componentsParser = ComponentsParser1(['，'], SingleComponentParser1())

@@ -9,7 +9,7 @@ def append_ancestors_to_system_path(levels):
 	for i in range(levels):
 		sys.path.append(parent)
 		parent = os.path.abspath(os.path.join(parent, ".."))
-		
+
 append_ancestors_to_system_path(3)
 
 from dataImporter.Utils.Utility import *
@@ -35,13 +35,13 @@ class Provider_zsq:
 		
 		self.__source__ = { u'comeFrom': u'赵绍琴临证验案精选', u'author':u'赵绍琴' }
 		
-		componentsParser = ComponentsParser1(['，'], SingleComponentParser1())
-		self.__prescriptionParser__ = PrescriptionParser1(componentsParser)
+		self.__componentsParser__ = ComponentsParser1(['，'], SingleComponentParser1())
+		self.__prescriptionParser__ = PrescriptionParser1(self.__componentsParser__)
 		
 	def getAll(self):			
 		sourceFile = codecs.open(self.__filePath__, 'r', 'utf-8', 'ignore')
 		
-		yiAnSplitPattern = re.compile(ur"【[二三四五六七八九十]+诊】[:: ]*$")
+		yiAnSplitPattern = re.compile(ur"【[复二三四五六七八九十]+诊】[:: ]*$")
 		#commentPattern = re.compile(ur"【[原]*按】[:: ]*")
 		
 		items = []
@@ -87,13 +87,14 @@ class Provider_zsq:
 				currentDetail['description'] += "\n" + line
 				continue
 			
-			if len(currentDetail['description']) == 0:
-				currentDetail['description'] = line
-			
-			
 			prescription = self.__prescriptionParser__.getPrescription(line)
 			if prescription:
 				currentDetail['prescriptions'].append(prescription)
+				continue
+			
+			
+			if len(currentDetail['prescriptions']) == 0:
+				currentDetail['description'] += "\n" + line
 				continue
 			
 			currentDetail['comment'] += "\n" + line
@@ -117,21 +118,24 @@ if __name__ == "__main__":
 	file_writer = codecs.open(to_file, 'w', 'utf-8', 'ignore')
 	
 
+	herbs = []
 	def shouldPrint(prescription):
+		return True
 		for component in prescription['components']:
 			if component["quantity"] == 0:
 				return True
 		return False
-	detailDefault = {u'description' : "None", u'comments' : "None", "diagnosis" : "None", "comments" : "None"}
+	detailDefault = {u'description' : "None", u'comments' : "None", "diagnosis" : "None", "comment" : "None"}
 	for item in items:
+#		file_writer.write(" ".join(item['diseaseNames']) + "\n")
 		for detail in item['details']:
 			Utility.apply_default_if_not_exist(detail, detailDefault)
 # 			file_writer.write("index:" + str(detail[u'order']) + "\n")
 # 			file_writer.write("description:" + detail[u'description'] + "\n")
 # 			file_writer.write("diagnosis:" + detail[u'diagnosis'] + "\n")
 #  			file_writer.write("comments:" + detail[u'comments'] + "\n")
- 
-# 			file_writer.write(detail[u'description'] + "\n")
+
+#			file_writer.write(detail[u'description'] + "\n")
 # 			file_writer.write("\n")
 # 			file_writer.write(detail[u'diagnosis'] + "\n")
 # 			file_writer.write("\n")
@@ -140,12 +144,28 @@ if __name__ == "__main__":
 			for prescription in detail['prescriptions']:
 				if not shouldPrint(prescription):
 					continue
-				file_writer.write(prescription["name"] + "\n")
+#				file_writer.write(prescription["name"] + "\n")
 				#if 'components' in prescription:
 				for component in prescription['components']:
-					file_writer.write(Utility.convert_dict_to_string(component)+ "\n") 
-				file_writer.write(str(prescription["quantity"]) + " " + prescription["unit"] + "\n")
-				file_writer.write(prescription["comment"] + "\n")
-				file_writer.write(prescription['_debug'] + "\n")
+					if component['applyQuantityToOthers']:
+						if not component['medical'] in herbs:
+							herbs.append(component['medical'])
+				#file_writer.write(Utility.convert_dict_to_string(component)+ "\n") 
+# 				file_writer.write(str(prescription["quantity"]) + " " + prescription["unit"] + "\n")
+# 				file_writer.write(prescription["comment"] + "\n")
+				#file_writer.write(prescription['_debug'] + "\n")
+			#file_writer.write(detail[u'comment'] + "\n")
+	i = 0
+	file_writer.write("items.update({")
+	for herb in herbs:
+		file_writer.write("ur\"" + herb + "\" : " + "ur\"" + herb[0] + herb[2:] + " " + herb[1:] + "\",  ")
+		i += 1
+		if i == 3:
+			i = 0
+			file_writer.write("})")
+			file_writer.write("\n")
+			file_writer.write("items.update({")
+	
+	file_writer.write("})")
 	file_writer.close()
 	print "done"

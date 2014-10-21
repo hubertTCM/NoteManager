@@ -116,9 +116,19 @@ class AliasImporter:
 
 class Abbrevention:
     def __init__(self):
-        items = {ur"浙川贝母":ur"浙贝 川贝", ur"苏叶子":ur"苏子 苏叶" , ur"鲜茅芦根":ur"鲜茅根 鲜芦根", ur"天麦冬" : ur"麦冬 天冬"}
-        items.update({ur"茅芦根":ur"茅根 芦根", ur"赤白芍" : ur"赤芍 白芍"})
-
+        #,  ur"焦三仙"  ur"大腹皮子"
+        items = {}
+        items.update({ur"芦茅根" : ur"芦根 茅根",  ur"鲜茅芦根" : ur"鲜芦根 茅芦根"})
+        items.update({ur"浙川贝母" : ur"浙贝母 川贝母",  ur"苏叶子" : ur"苏子 苏叶",  ur"茅芦根" : ur"茅根 芦根"})
+        items.update({ur"赤白芍" : ur"赤芍 白芍",  ur"生熟地" : ur"生地 熟地",  ur"竹叶茹" : ur"竹茹 竹茹"})
+        items.update({ur"藿苏梗" : ur"藿梗 苏梗",  ur"杏苡仁" : ur"杏仁 苡仁",  ur"藿佩兰" : ur"藿香 佩兰"})
+        items.update({ur"南北沙参" : ur"南沙参 北沙参",  ur"大小蓟" : ur"大蓟 小蓟",  ur"苏叶梗" : ur"苏梗 苏叶" })
+        items.update({ur"天麦冬" : ur"天冬 麦冬",  ur"生熟薏米" : ur"生薏米 熟薏米" })
+        items.update({ur"冬瓜皮子" : ur"冬皮子 冬皮子",  ur"川浙贝母" : ur"川贝母 浙贝母",  ur"青陈皮" : ur"青皮 陈皮" })
+        items.update({ ur"苏子梗" : ur"苏梗 苏子",  ur"苏藿梗" : ur"苏梗 藿梗" })
+        items.update({ur"生熟地黄" : ur"生地黄 熟地黄",  ur"天麦门冬" : ur"天冬 麦冬" })
+        items.update({ur"炙乳没" : ur"炙没药 炙乳香" })
+        
 if __name__ == "__main__":
     print "start"
     importer = AliasImporter()

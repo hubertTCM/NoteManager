@@ -48,8 +48,8 @@ class MedicalNameParser:
 class QuantityParser1:
     def __init__(self, text):
         self._source_text = text.strip()
-        self._unit = None
-        self._quantity = None
+        self._unit = ""
+        self._quantity = 0
             
     def parse(self):
         m = re.compile(ur"([\d]+[.]?[\d]*)([^（(]*)").match(self._source_text)
