@@ -114,6 +114,11 @@ class AliasImporter:
                     print Exception,":",ex
     
 
+class Abbrevention:
+    def __init__(self):
+        items = {ur"浙川贝母":ur"浙贝 川贝", ur"苏叶子":ur"苏子 苏叶" , ur"鲜茅芦根":ur"鲜茅根 鲜芦根", ur"天麦冬" : ur"麦冬 天冬"}
+        items.update({ur"茅芦根":ur"茅根 芦根", ur"赤白芍" : ur"赤芍 白芍"})
+
 if __name__ == "__main__":
     print "start"
     importer = AliasImporter()

@@ -46,14 +46,14 @@ class Provider_fzl:
 					currentPrescription['name'] = name
 				continue
 			
-			if 'comments' in currentPrescription:
-				currentPrescription['comments'] += "\n" + item
+			if 'comment' in currentPrescription:
+				currentPrescription['comment'] += "\n" + item
 				continue
 			
 			if not 'components' in currentPrescription:
 				quantity, unit, otherText = filter1.splitByQuantity(item)
-				parser1 = PrescriptionParser1([' '], otherText, ComponentParser1())
-				components = parser1.getComponents()
+				parser1 = PrescriptionParser1([' '], SingleComponentParser1())
+				components = parser1.getComponents(otherText)
 				if len(components) > 0:
 					currentPrescription['components'] = components
 				if quantity > 0:
@@ -66,7 +66,7 @@ class Provider_fzl:
 					currentPrescription['quantity'] = quantity
 					currentPrescription['unit'] = unit
 				else:
-					currentPrescription['comments'] = item
+					currentPrescription['comment'] = item
 					
 		if currentPrescription:
 			prescriptions.append(currentPrescription)

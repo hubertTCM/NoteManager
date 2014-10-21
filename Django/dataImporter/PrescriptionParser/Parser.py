@@ -18,6 +18,10 @@ from ComponentAdjustor import *
 def adjust_components(getComponents):
     def inner(*args, **kwargs):
         components = getComponents(*args, **kwargs)
+        
+        if not components:
+            return components
+        
         components.reverse() #防风　桔梗　桂枝　人参　甘草各一两
         previous_quantity = 0
         previous_unit = None
@@ -40,7 +44,7 @@ def adjust_components(getComponents):
 
 #制附片60克(久煎) 
 #葱白60克 
-class ComponentParser1:
+class SingleComponentParser1:
     def __clear__(self):
         self._source_text = None
         self._herb = None
@@ -50,7 +54,7 @@ class ComponentParser1:
         
     def __parse_quantity_comment__(self, text):
         quantity_unit_pattern = ur"([各]?[\d]+[.]?[\d]*[^（(]+)"
-        comment_pattern = ur"[（(]([\W]+)[)）]"
+        comment_pattern = ur"[（(]([\W\d.]+)[)）]"
         successed = False
         # quantity（comment）
         m = re.compile(quantity_unit_pattern + comment_pattern).match(text)
@@ -94,13 +98,13 @@ class ComponentParser1:
         self._source_text = text
         self._herb = text
            
-        m = MedicalNameParser(self._source_text)
-        herb, other = m.split_with_medical_name()
-        if herb:
-            self._herb = herb
-            self.__parse_quantity_comment__(other)
-        else:
-            self.__parse_normal_medical_name__()
+#         m = MedicalNameParser(self._source_text)
+#         herb, other = m.split_with_medical_name()
+#         if herb:
+#             self._herb = herb
+#             self.__parse_quantity_comment__(other)
+#         else:
+        self.__parse_normal_medical_name__()
         
         quantity, unit = (0, None)
         if self._quantity_unit:
@@ -111,7 +115,7 @@ class ComponentParser1:
                      "applyQuantityToOthers":self._apply_quantity_to_others} 
         return component
 
-class ComponentParser2:
+class SingleComponentParser2:
     def __init__(self, text, component_adjustor):
         self._source_text = text
         self._herb = text
@@ -187,14 +191,14 @@ class ComponentParser2:
         print Utility.convert_dict_to_string(component)
         return component
     
-class PrescriptionParser1:
-    def __init__(self, splitTags, sourceText, componentParser):
+class ComponentsParser1:
+    def __init__(self, splitTags, componentParser):
         self.__splitTags__ = splitTags
-        self.__sourceText__ = sourceText
         self.__componentParser__ = componentParser
         
     @adjust_components
-    def getComponents(self):
+    def getComponents(self, sourceText):
+        self.__sourceText__ = sourceText
         toTag = self.__splitTags__[0]
         for tag in self.__splitTags__:
             if tag == toTag:
@@ -233,29 +237,92 @@ class PrescriptionQuantityFilter1:
             quantityParser = QuantityParser2(text[m.start():])
             quantity, unit = quantityParser.parse()
         return quantity, unit, otherText
-    
-if __name__ == "__main__": 
-    def test1():
-        texts = [u'童便(为引)',
-                 u'麻黄10克',
-                 u'制附片各3.5克',
-                 u'制附片60克(久煎)',
-                 u'制附片60克',
-                 u'制附片60']     
-       
-        sp = ComponentParser1()
-        for item in texts:
-            print item + " "
-            component = sp.getComponent(item)
-            print Utility.convert_dict_to_string(component)
+
+class NameCommentSpliter1:
+    def __init__(self):
+        self.__nameCommentPattern__ = re.compile(ur"([^（(]+)[（(]([\W]+)[)）][:： ]")
+        self.__namePattern__ = re.compile(ur"([^（(]+)[:： ]")
+        
+    def split(self, text):
+        m = self.__nameCommentPattern__.match(text)
+        name = ""
+        comment = ""
+        other = text
+        if m:
+            name = m.group(1)
+            comment = m.group(2)
+            other = text[m.end():]
+            return name, comment, other
+        
+        m = self.__namePattern__.match(text)
+        if m:
+            name = m.group(1)
+            other = text[m.end():]
+        return name, comment, other
             
-        text = u'童便(为引) 桂枝10克  白芍1O克  炙甘草6克  生姜6克  大枣10枚  白薇12克  三剂 '
-        #text = u' 桂枝6克  麻黄10克  甘草18克  杏仁15克  二剂'
-        filter1 = PrescriptionQuantityFilter1()
-        quantity, unit, componentsText = filter1.splitByQuantity(text)
-        parser1 = PrescriptionParser1([' '], componentsText, ComponentParser1())
-        print "quantity:" + str(quantity) + " unit:" + unit
-        for component in parser1.getComponents():
+
+class PrescriptionParser1:
+    def __init__(self, componentsParser):
+        self.__componentsParser__ = componentsParser
+        self.__nameCommentParser__ = NameCommentSpliter1()
+        
+    def getPrescription(self, text):
+        text = text.strip()
+        
+        pattern = ur"([服]*[一二三四五六七八九十]+[剂付])[。]*$"
+        m = re.compile(pattern).search(text)
+        if not m:
+            return None
+        
+        otherText = text[:m.start()]
+        quantityParser = QuantityParser2(m.group(1))
+        quantity, unit = quantityParser.parse()
+        name, comment, componentsText = self.__nameCommentParser__.split(otherText)
+        prescription = {"name": name, "comment":comment, "quantity" : quantity, "unit" : unit, "_debug":text}
+        components = self.__componentsParser__.getComponents(componentsText)
+        if components:
+            prescription['components'] = components
+            return prescription
+        
+        return None
+
+if __name__ == "__main__": 
+    def outputPrescription(prescription):
+        print "quantity:" + str(prescription['quantity']) + " unit:" + prescription['unit']
+        for component in prescription['components']:
             print Utility.convert_dict_to_string(component)
+        print "comment:" + prescription['comment']
+        
+    def test1():
+#         texts = [u'童便(为引)',
+#                  u'麻黄10克',
+#                  u'制附片各3.5克',
+#                  u'制附片60克(久煎)',
+#                  u'制附片60克',
+#                  u'制附片60']     
+#        
+#         sp = SingleComponentParser1()
+#         for item in texts:
+#             print item + " "
+#             component = sp.getComponent(item)
+#             print Utility.convert_dict_to_string(component)
+#             
+#         text = u'童便(为引) 桂枝10克  白芍1O克  炙甘草6克  生姜6克  大枣10枚  白薇12克  三剂 '
+#         #text = u' 桂枝6克  麻黄10克  甘草18克  杏仁15克  二剂'
+#         filter1 = PrescriptionQuantityFilter1()
+#         quantity, unit, componentsText = filter1.splitByQuantity(text)
+#         parser1 = ComponentsParser1([' '], SingleComponentParser1())
+#         print "quantity:" + str(quantity) + " unit:" + unit
+#         for component in parser1.getComponents(componentsText):
+#             print Utility.convert_dict_to_string(component)
+        
+        texts =[ ur"处方二： 鲜九节菖蒲根15克（煎汤送服神犀丹一丸 犀角末0.6克 分二次汤药送下） 一付。",
+                 ur"处方：生白芍15克，天麦冬各6克，沙参20克，元参15克，石斛10克，前胡6克，黄芩10克，杏仁10克，黛蛤散12克(包)，川贝粉3克(冲)，羚羊角粉0.5克(冲)，服二剂"
+                 ]
+        componentsParser = ComponentsParser1(['，'], SingleComponentParser1())
+        prescriptionParser = PrescriptionParser1(componentsParser)
+        for text in texts:
+            prescription = prescriptionParser.getPrescription(text)
+            outputPrescription(prescription)
     test1()   
     print "done"

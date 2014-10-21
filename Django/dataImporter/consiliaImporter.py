@@ -72,6 +72,7 @@ class YiAnPrescriptionImporter:
         
         yiAnPrescription.quantity = self.__getQuantity__(source['quantity'])
         yiAnPrescription.unit = source['unit']
+        yiAnPrescription.comment = source['comment']
         
         yiAnPrescription.save()
         
