@@ -52,7 +52,7 @@ class Provider_fzl:
 			
 			if not 'components' in currentPrescription:
 				quantity, unit, otherText = filter1.splitByQuantity(item)
-				parser1 = PrescriptionParser1([' '], SingleComponentParser1())
+				parser1 = ComponentsParser1([' '], SingleComponentParser1())
 				components = parser1.getComponents(otherText)
 				if len(components) > 0:
 					currentPrescription['components'] = components
@@ -73,7 +73,7 @@ class Provider_fzl:
 		else:
 			print "**" + sourceText
 			
-		emptyPrescription = {"name":"", "comments":"", "quantity":0, "unit":""}
+		emptyPrescription = {"name":"", "comment":"", "quantity":0, "unit":""}
 		for prescription in prescriptions:
 			Utility.apply_default_if_not_exist(prescription, emptyPrescription)
 		return prescriptions
@@ -158,7 +158,7 @@ class Provider_fzl:
 		titleInfo[u'diseaseNames'] = filter(lambda(x):len(x) > 0, items)
 		return titleInfo
 		
-	def get_all_consilias(self):			
+	def getAll(self):			
 		sourceFile = codecs.open(self._source_file_fullpath, 'r', 'utf-8', 'ignore')
 		content = sourceFile.read()
 		sourceFile.close()
@@ -191,13 +191,13 @@ class Provider_fzl:
 
 if __name__ == "__main__":
 	provider = Provider_fzl()
-	items = provider.get_all_consilias()
+	items = provider.getAll()
 	
 	to_file = os.path.dirname(__file__) + '\\fzl_converted.txt'
 	file_writer = codecs.open(to_file, 'w', 'utf-8', 'ignore')
 	
 
-	detailDefault = {u'description' : "None", u'comments' : "None", "diagnosis" : "None", "comments" : "None"}
+	detailDefault = {u'description' : "None", u'comment' : "None", "diagnosis" : "None", "comments" : "None"}
 	for item in items:
 		for detail in item['details']:
 			Utility.apply_default_if_not_exist(detail, detailDefault)
@@ -218,6 +218,6 @@ if __name__ == "__main__":
 				for component in prescription['components']:
 					file_writer.write(Utility.convert_dict_to_string(component)+ "\n") 
 				file_writer.write(str(prescription["quantity"]) + " " + prescription["unit"] + "\n")
-				file_writer.write(prescription["comments"] + "\n")
+				file_writer.write(prescription["comment"] + "\n")
 	file_writer.close()
 	print "done"

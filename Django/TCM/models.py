@@ -27,7 +27,7 @@ class YiAnDetail(models.Model):
     order = models.IntegerField()
     yiAnId = models.IntegerField()
     description = models.TextField(null = True)
-    comments = models.TextField(null = True) 
+    comment = models.TextField(null = True) 
     comeFrom = models.ForeignKey(DataSource, null = True)
     class Meta:
         unique_together = ['yiAnId', 'order'] # it is better to set primary key, however, it is not supported in django 1.4

@@ -240,8 +240,8 @@ class PrescriptionQuantityFilter1:
 
 class NameCommentSpliter1:
     def __init__(self):
-        self.__nameCommentPattern__ = re.compile(ur"([^（(]+)[（(]([\W]+)[)）][:：][ ]")
-        self.__namePattern__ = re.compile(ur"([^（(]+)[:：][ ]")
+        self.__nameCommentPattern__ = re.compile(ur"(^[^（(:：]+)[（(]([\W]+)[)）][:：][ ]*")
+        self.__namePattern__ = re.compile(ur"(^[^（(:：]+)[:：][ ]*")
         
     def split(self, text):
         m = self.__nameCommentPattern__.match(text)
@@ -259,36 +259,48 @@ class NameCommentSpliter1:
             name = m.group(1)
             other = text[m.end():]
         return name, comment, other
-            
 
 class PrescriptionParser1:
     def __init__(self, componentsParser):
         self.__componentsParser__ = componentsParser
         self.__nameCommentParser__ = NameCommentSpliter1()
         
+        quantityPattern = ur"([服]*[一二三四五六七八九十]+[剂付])[。]*$"
+        self.__quantityPattern__ = re.compile(quantityPattern)
+        
+        quantityCommentPattern = ur"([服]*[一二三四五六七八九十]+[剂付])[。]*[（(]([\W]+)[)）]$"
+        self.__quantityCommentPattern__ = re.compile(quantityCommentPattern)
+        
     def getPrescription(self, text):
         text = text.strip()
         
-        pattern = ur"([服]*[一二三四五六七八九十]+[剂付])[。]*$"
-        m = re.compile(pattern).search(text)
+        m = self.__quantityPattern__.search(text)
+        comment = None
         if not m:
-            return None
-        
-        otherText = text[:m.start()]
-        quantityParser = QuantityParser2(m.group(1))
-        quantity, unit = quantityParser.parse()
-        name, comment, componentsText = self.__nameCommentParser__.split(otherText)
-        prescription = {"name": name, "comment":comment, "quantity" : quantity, "unit" : unit, "_debug":text}
-        components = self.__componentsParser__.getComponents(componentsText)
-        if components:
-            prescription['components'] = components
-            return prescription
-        
+            m = self.__quantityCommentPattern__.search(text)
+            if m:
+                comment = m.group(2)
+            
+        if m:
+            quantityParser = QuantityParser2(m.group(1))
+            quantity, unit = quantityParser.parse()
+            otherText = text[:m.start()]
+            
+            item = self.__nameCommentParser__.split(otherText)
+            if not comment:
+                comment = item[1]
+                
+            prescription = {"name": item[0], "comment":comment, "quantity" : quantity, "unit" : unit, "_debug":text}
+            components = self.__componentsParser__.getComponents(item[2])
+            
+            if components:
+                prescription['components'] = components
+                return prescription
         return None
 
 if __name__ == "__main__": 
     def outputPrescription(prescription):
-        print "quantity:" + str(prescription['quantity']) + " unit:" + prescription['unit']
+        print "name:" + prescription['name']+ " quantity:" + str(prescription['quantity']) + " unit:" + prescription['unit']
         for component in prescription['components']:
             print Utility.convert_dict_to_string(component)
         print "comment:" + prescription['comment']
@@ -316,7 +328,8 @@ if __name__ == "__main__":
 #         for component in parser1.getComponents(componentsText):
 #             print Utility.convert_dict_to_string(component)
         
-        texts =[ ur"麦门冬10克，沙参10克，五味子6克，蝉衣6克，僵蚕10克，片姜黄6克，柴胡6克，黄芩6克，白芍10克，丝瓜络，桑枝， 七剂",
+        texts =[ur"生石膏30克(先煎)，知母15克，生甘草10克，梗米30克，生黄芪30克，五味子10克，西洋参粉6克，一付(即刻先服)", 
+                ur"麦门冬10克，沙参10克，五味子6克，蝉衣6克，僵蚕10克，片姜黄6克，柴胡6克，黄芩6克，白芍10克，丝瓜络，桑枝， 七剂",
                  ur"处方二： 鲜九节菖蒲根15克（煎汤送服神犀丹一丸 犀角末0.6克 分二次汤药送下） 一付。",
                  ur"处方：生白芍15克，天麦冬各6克，沙参20克，元参15克，石斛10克，前胡6克，黄芩10克，杏仁10克，黛蛤散12克(包)，川贝粉3克(冲)，羚羊角粉0.5克(冲)，服二剂"
                  ]

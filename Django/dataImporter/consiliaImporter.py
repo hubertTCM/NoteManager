@@ -4,6 +4,7 @@ import sys
 from django.core.management import setup_environ
 
 from ConsiliaProvider.provider_fzl import *
+from ConsiliaProvider.provider_zsq import *
 from ConsiliaProvider.zmt import *
 from dataImporter.Utils.Utility import *
 from dataImporter.Utils.HerbUtil import HerbUtility
@@ -120,7 +121,7 @@ class SingleImporter:
         detail.yiAnId = self.__yiAnId__
         detail.order = source[u'order']
         detail.description = source[u'description']
-        detail.comments = source[u'comments']
+        detail.comment = source[u'comment']
         detail.comeFrom = self.__getSource__(self.__consiliaInfo__[u'comeFrom'])
         detail.save()
         
@@ -130,7 +131,7 @@ class SingleImporter:
         return detail
         
     def __importYiAn__(self):
-        detailDefault = {u'description' : None, u'comments' : None, 'prescriptions' : []}
+        detailDefault = {u'description' : None, u'comment' : None, 'prescriptions' : []}
         firstItem = None
         for sourceDetail in self.__consiliaInfo__[u'details']:
             Utility.apply_default_if_not_exist(sourceDetail, detailDefault)
@@ -153,12 +154,12 @@ class Importer:
     def __init__(self):
         self._consiliaSources = []
         self._consiliaSources.append(Provider_fzl())
-        #self._consiliaSources.append(Provider_zmt())  
+        self._consiliaSources.append(Provider_zsq())  
         
     def doImport(self):
         impoter = SingleImporter()
         for provider in self._consiliaSources:
-            for consilia in provider.get_all_consilias():
+            for consilia in provider.getAll():
                 try:
                     impoter.doImport(consilia)             
                 except Exception,ex:

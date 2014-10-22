@@ -15,6 +15,7 @@ append_ancestors_to_system_path(3)
 from dataImporter.Utils.Utility import *
 from dataImporter.PrescriptionParser.Parser import *
 from ConsiliaFileUpdater import Updater
+from ConsiliaOutput import *
 
 #TBD
 class Provider_zsq:	
@@ -38,11 +39,17 @@ class Provider_zsq:
 		self.__componentsParser__ = ComponentsParser1(['，'], SingleComponentParser1())
 		self.__prescriptionParser__ = PrescriptionParser1(self.__componentsParser__)
 		
+	def __getPrescription__(self, line):
+		text1 = ur"丸方：细生地60克，肥玉竹60克，川石斛30克，生白芍60克，麦门冬30克，五味子30克，山药45克，丹皮24克，茯苓块60克，元参30克，焦三仙各60克，鸡内金30克，香稻芽60克，砂仁15克，白术30克，炒枳壳30克，木香15克"
+		#ur"方药；苏叶子各10克，前胡6克，浙贝母10克，杏仁10克，枇杷叶10克，茅芦根各10克，冬瓜仁10克，苡米仁10克，葶苈子10克，焦三仙各10克，海浮石10克。"
+		if line == text1:
+			pass
+		return self.__prescriptionParser__.getPrescription(line)
+		
 	def getAll(self):			
 		sourceFile = codecs.open(self.__filePath__, 'r', 'utf-8', 'ignore')
 		
 		yiAnSplitPattern = re.compile(ur"【[复二三四五六七八九十]+诊】[:: ]*$")
-		#commentPattern = re.compile(ur"【[原]*按】[:: ]*")
 		
 		items = []
 		
@@ -117,55 +124,56 @@ if __name__ == "__main__":
 	to_file = os.path.dirname(__file__) + '\\debug.txt'
 	file_writer = codecs.open(to_file, 'w', 'utf-8', 'ignore')
 	
+	writer = ConsiliaWriter()
+	writer.write_description_contains_number(provider.getAll())
 
-	herbs = []
-	def shouldPrint(prescription):
-		return True
-		for component in prescription['components']:
-			if component["quantity"] == 0:
-				return True
-		return False
-	detailDefault = {u'description' : "None", u'comments' : "None", "diagnosis" : "None", "comment" : "None"}
-	for item in items:
-#		file_writer.write(" ".join(item['diseaseNames']) + "\n")
-		for detail in item['details']:
-			Utility.apply_default_if_not_exist(detail, detailDefault)
-# 			file_writer.write("index:" + str(detail[u'order']) + "\n")
-# 			file_writer.write("description:" + detail[u'description'] + "\n")
-# 			file_writer.write("diagnosis:" + detail[u'diagnosis'] + "\n")
-#  			file_writer.write("comments:" + detail[u'comments'] + "\n")
-
-#			file_writer.write(detail[u'description'] + "\n")
-# 			file_writer.write("\n")
-# 			file_writer.write(detail[u'diagnosis'] + "\n")
-# 			file_writer.write("\n")
-# 			file_writer.write(detail[u'comments'] + "\n")
-# 			file_writer.write("\n")
-			for prescription in detail['prescriptions']:
-				if not shouldPrint(prescription):
-					continue
-#				file_writer.write(prescription["name"] + "\n")
-				#if 'components' in prescription:
-				for component in prescription['components']:
-					if component['applyQuantityToOthers']:
-						if not component['medical'] in herbs:
-							herbs.append(component['medical'])
-				#file_writer.write(Utility.convert_dict_to_string(component)+ "\n") 
-# 				file_writer.write(str(prescription["quantity"]) + " " + prescription["unit"] + "\n")
-# 				file_writer.write(prescription["comment"] + "\n")
-				#file_writer.write(prescription['_debug'] + "\n")
-			#file_writer.write(detail[u'comment'] + "\n")
-	i = 0
-	file_writer.write("items.update({")
-	for herb in herbs:
-		file_writer.write("ur\"" + herb + "\" : " + "ur\"" + herb[0] + herb[2:] + " " + herb[1:] + "\",  ")
-		i += 1
-		if i == 3:
-			i = 0
-			file_writer.write("})")
-			file_writer.write("\n")
-			file_writer.write("items.update({")
-	
-	file_writer.write("})")
-	file_writer.close()
+# 	herbs = []
+# 	def shouldPrint(prescription):
+# 		return True
+# 		for component in prescription['components']:
+# 			if component["quantity"] == 0:
+# 				return True
+# 		return False
+# 	detailDefault = {u'description' : "None", "comment" : "None"}
+# 	for item in items:
+# 		file_writer.write(" ".join(item['diseaseNames']) + "\n")
+# 		for detail in item['details']:
+# 			Utility.apply_default_if_not_exist(detail, detailDefault)
+# # 			file_writer.write("index:" + str(detail[u'order']) + "\n")
+# # 			file_writer.write("description:" + detail[u'description'] + "\n")
+# # 			file_writer.write("comment:" + detail[u'comment'] + "\n")
+# 
+# #			file_writer.write(detail[u'description'] + "\n")
+# # 			file_writer.write("\n")
+# # 			file_writer.write(detail[u'diagnosis'] + "\n")
+# # 			file_writer.write("\n")
+# # 			file_writer.write(detail[u'comments'] + "\n")
+# # 			file_writer.write("\n")
+# #			for prescription in detail['prescriptions']:
+# # 				if not shouldPrint(prescription):
+# # 					continue
+# #				file_writer.write(prescription["name"] + "\n")
+# 				#if 'components' in prescription:
+# # 				for component in prescription['components']:
+# # 					if component['applyQuantityToOthers']:
+# # 						if not component['medical'] in herbs:
+# # 							herbs.append(component['medical'])
+# 				#file_writer.write(Utility.convert_dict_to_string(component)+ "\n") 
+# # 				file_writer.write(str(prescription["quantity"]) + " " + prescription["unit"] + "\n")
+# # 				file_writer.write(prescription["comment"] + "\n")
+# 				#file_writer.write(prescription['_debug'] + "\n")
+# 			#file_writer.write(detail[u'comment'] + "\n")
+# # 	i = 0
+# # 	file_writer.write("items.update({")
+# # 	for herb in herbs:
+# # 		file_writer.write("ur\"" + herb + "\" : " + "ur\"" + herb[0] + herb[2:] + " " + herb[1:] + "\",  ")
+# # 		i += 1
+# # 		if i == 3:
+# # 			i = 0
+# # 			file_writer.write("})")
+# # 			file_writer.write("\n")
+# # 			file_writer.write("items.update({")
+# # 	
+# # 	file_writer.write("})")
+# 	file_writer.close()
 	print "done"

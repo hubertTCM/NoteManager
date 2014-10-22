@@ -92,9 +92,9 @@ class AliasImporter:
     def __import__(self, alias, standard_name):
         alias = Utility.remove_blank_space(alias)
         standard_name = Utility.remove_blank_space(standard_name)   
-        items = HerbAlias.objects.filter(name = alias)
-        if len(items) > 0:
-            return   
+#         items = HerbAlias.objects.filter(name = alias)
+#         if len(items) > 0:
+#             return   
         
         print "importing " + alias
         herb, isCreated = Herb.objects.get_or_create(name=standard_name)
@@ -112,9 +112,8 @@ class AliasImporter:
                     self.__import__(alias, standard_name)
                 except Exception,ex:
                     print Exception,":",ex
-    
 
-class Abbrevention:
+class AbbreviationImporter:
     def __init__(self):
         #,  ur"焦三仙"  ur"大腹皮子"
         items = {}
