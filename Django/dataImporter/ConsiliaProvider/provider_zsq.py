@@ -36,14 +36,28 @@ class Provider_zsq:
 		
 		self.__source__ = { u'comeFrom': u'赵绍琴临证验案精选', u'author':u'赵绍琴' }
 		
-		self.__componentsParser__ = ComponentsParser1(['，'], SingleComponentParser1())
+		self.__componentsParser__ = ComponentsParser1(['，', '、'], SingleComponentParser1())
 		self.__prescriptionParser__ = PrescriptionParser1(self.__componentsParser__)
 		
+	def __isDescription__(self, line):
+		prescription_words = [ur"【初诊】"]
+		for key_word in prescription_words:
+			if re.compile(ur"^ *"+ key_word).search(line):
+				return True
+		return False
+		
 	def __getPrescription__(self, line):
-		text1 = ur"丸方：细生地60克，肥玉竹60克，川石斛30克，生白芍60克，麦门冬30克，五味子30克，山药45克，丹皮24克，茯苓块60克，元参30克，焦三仙各60克，鸡内金30克，香稻芽60克，砂仁15克，白术30克，炒枳壳30克，木香15克"
-		#ur"方药；苏叶子各10克，前胡6克，浙贝母10克，杏仁10克，枇杷叶10克，茅芦根各10克，冬瓜仁10克，苡米仁10克，葶苈子10克，焦三仙各10克，海浮石10克。"
-		if line == text1:
-			pass
+		comment_key_words = [ur"水煎服", 
+							ur"连服([两一二三四五六七八九十]+[剂付])", #连服三付而愈,
+							ur"连服[\d]+[剂付]",  #连服三付而愈
+							ur"服上方[一二三四五六七八九十]+[剂付]", #服上方三剂
+							ur"上方去", #上方去大黄、川楝子、大腹皮、槟榔，7剂
+							ur"\W*原方继进"#药后痛止眠安，仍以前法进退。忌食辛辣肥甘为要。原方继进10剂。
+							]
+		for key_word in comment_key_words:
+			if re.compile(ur"^[ ]*"+ key_word).search(line):
+				return None
+
 		return self.__prescriptionParser__.getPrescription(line)
 		
 	def getAll(self):			
@@ -63,7 +77,7 @@ class Provider_zsq:
 			return {"description" : "", "order" : order, 'prescriptions':[], 'comment':""}
 
 		for line in sourceFile.readlines():
-			line = line.strip(" \r\n")
+			line = line.strip(" \t\r\n")
 			if len(line) == 0:
 				if currentYiAn:
 					currentYiAn["details"].append(currentDetail)
@@ -94,7 +108,11 @@ class Provider_zsq:
 				currentDetail['description'] += "\n" + line
 				continue
 			
-			prescription = self.__prescriptionParser__.getPrescription(line)
+			if self.__isDescription__(line):
+				currentDetail['description'] += "\n" + line
+				continue
+				
+			prescription = self.__getPrescription__(line)#self.__prescriptionParser__.getPrescription(line)
 			if prescription:
 				currentDetail['prescriptions'].append(prescription)
 				continue
@@ -105,7 +123,6 @@ class Provider_zsq:
 				continue
 			
 			currentDetail['comment'] += "\n" + line
-			continue
 			
 			sourceFile.close()
 		
@@ -119,13 +136,11 @@ class Provider_zsq:
 
 if __name__ == "__main__":
 	provider = Provider_zsq()
-	Updater().update(provider.__filePath__)
-	items = provider.getAll()	
-	to_file = os.path.dirname(__file__) + '\\debug.txt'
-	file_writer = codecs.open(to_file, 'w', 'utf-8', 'ignore')
-	
+	provider.__getPrescription__(ur"水煎服，每日一剂。")
+	#Updater().update(provider.__filePath__)
+	items = provider.getAll()		
 	writer = ConsiliaWriter()
-	writer.write_description_contains_number(provider.getAll())
+	writer.write_consilias(items)
 
 # 	herbs = []
 # 	def shouldPrint(prescription):

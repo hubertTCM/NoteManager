@@ -30,7 +30,7 @@ class HerbUtility:
         return self._herbs
     
     def isHerb(self, name):
-        return name in self.get_all_herbs()
+        return name in self.getAllHerbs()
     
     def extractHerbsFromAbbreviation(self, abbreviation):
         return [self.getHerbName(abbreviation)]

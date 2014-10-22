@@ -46,28 +46,23 @@ class MedicalNameParser:
 
 
 class QuantityParser1:
-    def __init__(self, text):
+    def parse(self, text):
         self._source_text = text.strip()
         self._unit = ""
         self._quantity = 0
-            
-    def parse(self):
-        m = re.compile(ur"([\d]+[.]?[\d]*)([^（(]*)").match(self._source_text)
+        
+        m = re.compile(ur"([\d]+[.]?[\d]*)([^。,，（(]*)").match(self._source_text)
         if m:
             self._quantity = m.group(1)
             self._unit = m.group(2)
         return self._quantity, self._unit       
 
-class QuantityParser2:
-    def __init__(self, text):
+class QuantityParser2: 
+    def parse(self, text):
         self._source_text = text.strip()
-        self._unit = None
+        self._unit = ""
         self._quantity = 0
         
-    def __adjust__(self):
-        pass
-    
-    def parse(self):
         m = re.findall(ur"[一二三四五六七八九十半百]+", self._source_text)
         pairs = [] 
         if m:
