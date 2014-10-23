@@ -20,6 +20,15 @@ from ComponentAdjustor import *
 
 herbUtility = HerbUtility() 
 
+def convert_name(from_name):
+    items = [ur"药用", ur"方用", ur"处方"]
+    
+    for item in items:
+        if from_name.startswith(item):
+            return from_name[len(item):]
+    
+    return from_name
+
 def adjust_components(getComponents):
     def inner(*args, **kwargs):
         components = getComponents(*args, **kwargs)
@@ -31,6 +40,7 @@ def adjust_components(getComponents):
         previous_quantity = 0
         previous_unit = None
         for component in components:#{'quantity': quantity, 'medical': medical, 'unit': unit, 'comments': comments}
+            component['medical'] = convert_name(component['medical'])
             apply_quantity_to_others = Utility.get_bool_value('applyQuantityToOthers', component)
             if apply_quantity_to_others:
                 previous_quantity = component['quantity']
@@ -250,13 +260,13 @@ class NameCommentSpliter1:
             name = m.group(1)
             comment = m.group(2)
             other = text[m.end():]
-            return name, comment, other
+            return convert_name(name), comment, other
         
         m = self.__namePattern__.match(text)
         if m:
             name = m.group(1)
             other = text[m.end():]
-        return name, comment, other
+        return convert_name(name), comment, other
 
 class PrescriptionParser1:
     def __init__(self, componentsParser):
@@ -287,7 +297,7 @@ class PrescriptionParser1:
                 return None
 #             if component['quantity'] == 0 or len(component['unit']) == 0:
 #                 return None
-        return {"name": name, "comment":comment, "quantity" : 0, "unit" : "", "components": components, "_debug":text}
+        return {"name": convert_name(name), "comment":comment, "quantity" : 0, "unit" : "", "components": components, "_debug":text}
             
     def getPrescription(self, text):
         text = text.strip()
@@ -322,7 +332,7 @@ class PrescriptionParser1:
             if not comment:
                 comment = item[1]
                 
-            prescription = {"name": item[0], "comment":comment, "quantity" : quantity, "unit" : unit, "_debug":text}
+            prescription = {"name": convert_name(item[0]), "comment":comment, "quantity" : quantity, "unit" : unit, "_debug":text}
             components = self.__componentsParser__.getComponents(item[2])
             
             if components:
