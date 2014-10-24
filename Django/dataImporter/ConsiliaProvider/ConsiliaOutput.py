@@ -67,7 +67,9 @@ class ConsiliaWriter:
         self.__file_writer__.write(detail[u'comment'] + "\n")
         
     def __write_single_consilia__(self, consilia):
+        self.__file_writer__.write(" ".join(consilia['diseaseNames']) + "\n")
         map(self.__write_single_detail__, consilia['details'])
+        self.__file_writer__.write("\n")
         
     def write_consilias(self, consilias):
         self.__file_writer__ = codecs.open(self.__file_name__, 'w', 'utf-8', 'ignore')

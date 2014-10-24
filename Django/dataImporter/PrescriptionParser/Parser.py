@@ -21,7 +21,7 @@ from ComponentAdjustor import *
 herbUtility = HerbUtility() 
 
 def convert_name(from_name):
-    items = [ur"药用", ur"方用", ur"处方"]
+    items = [ur"药用", ur"方用", ur"处方", ur"拟方如下"]
     
     for item in items:
         if from_name.startswith(item):
@@ -276,36 +276,43 @@ class PrescriptionParser1:
         quantityPatterns = [ur"服*([一二三四五六七八九十]+[剂付])",
                             ur"服*([\d]+[剂付])"]
         postItem = ur"(而愈|，煎服|，水煎服|。水煎服|，巩固疗效)*[。]?$"
-        self.__quantityPatterns__ = [re.compile(item + postItem) for item in quantityPatterns]
-        self.__quantityPatterns__.insert(0, re.compile(ur"水煎服，每日([\d]+[剂付])。"))
-        self.__quantityPatterns__.insert(0, re.compile(ur"水煎服，每日([一二三四五六七八九十]+[剂付])。"))
+        self.__quantity_patterns__ = [re.compile(item + postItem) for item in quantityPatterns]
+        self.__ignore_quantity_patterns__ = []
+        self.__ignore_quantity_patterns__.insert(0, re.compile(ur"水煎服，每日([\d]+[剂付])[。]?$"))
+        self.__ignore_quantity_patterns__.insert(0, re.compile(ur"水煎服，每日([一二三四五六七八九十]+[剂付])[。]?$"))
         quantityCommentPatterns = [ur"([服]*[一二三四五六七八九十]+[剂付])[。]*[（(]([\W]+)[)）]$",
                                    ur"([服]*[\d]+[剂付])[。]*[（(]([\W]+)[)）]$"]
         self.__quantityCommentPatterns__ = [re.compile(item) for item in quantityCommentPatterns]
         
         self.__quantityParsers__ = [QuantityParser1(), QuantityParser2()]
         
-    def __parse_without_quantity__(self, text):
+    def __parse_without_quantity__(self, text, check_medical):
         name, comment, componentsText = self.__nameCommentParser__.split(text)
         components = self.__componentsParser__.getComponents(componentsText)
         if not components:
             return None
         
         #contains_unknown_herb = False
-        for component in components:
-            if not herbUtility.isHerb(component['medical']):
-                return None
-#             if component['quantity'] == 0 or len(component['unit']) == 0:
-#                 return None
+        if check_medical:
+            for component in components:
+                if not herbUtility.isHerb(component['medical']):
+                    return None
         return {"name": convert_name(name), "comment":comment, "quantity" : 0, "unit" : "", "components": components, "_debug":text}
             
     def getPrescription(self, text):
-        text = text.strip()
         m = None
-        for pattern in self.__quantityPatterns__:
+        
+        text = text.strip()
+        for pattern in self.__ignore_quantity_patterns__:
+            m = pattern.search(text) 
+            if m:
+                return self.__parse_without_quantity__(text[:m.start()], False)
+
+        for pattern in self.__quantity_patterns__:
             m = pattern.search(text)
             if m:
                 break
+            
         comment = None
         if not m:
             for pattern in self.__quantityCommentPatterns__:
@@ -313,9 +320,6 @@ class PrescriptionParser1:
                 if m:
                     comment = m.group(2)
                     break
-#             m = self.__quantityCommentPattern__.search(text)
-#             if m:
-#                 comment = m.group(2)
             
         if m:
             quantity = 0
@@ -324,8 +328,6 @@ class PrescriptionParser1:
                 quantity, unit = parser.parse(m.group(1))
                 if quantity > 0 and unit and len(unit) > 0:
                     break
-#             quantityParser = QuantityParser2(m.group(1))
-#             quantity, unit = quantityParser.parse()
             otherText = text[:m.start()]
             
             item = self.__nameCommentParser__.split(otherText)
@@ -339,7 +341,7 @@ class PrescriptionParser1:
                 prescription['components'] = components
                 return prescription
             
-        return self.__parse_without_quantity__(text)
+        return self.__parse_without_quantity__(text, True)
 
 if __name__ == "__main__": 
     writer = PrescriptionWriter()
@@ -377,7 +379,8 @@ if __name__ == "__main__":
 #         for component in parser1.getComponents(componentsText):
 #             print Utility.convert_dict_to_string(component)
         
-        texts =[ur"药用:蝉蜕3克，僵蚕6克，片姜黄3克，大黄1克，白茅根10克，小蓟10克，生地榆6克，炒槐花6克，茜草6克，水煎服，每日1剂。",
+        texts =[ur" 拟方如下：荆芥炭、防风、佩兰、藿香、生地愉、炒槐花、丹参、茜草、白鲜皮、地肤子、草河车、大腹皮、槟榔、灶心土、大黄，水煎服，每日一剂。",
+                ur"药用:蝉蜕3克，僵蚕6克，片姜黄3克，大黄1克，白茅根10克，小蓟10克，生地榆6克，炒槐花6克，茜草6克，水煎服，每日1剂。",
                 ur"荆芥，防风，白芷，独活，生地榆，炒槐花，丹参，茜草，焦三仙，水红花子，大腹皮，槟榔，大黄",
                 ur"处方；藿香10克，佩兰10克，苏叶10克，茅芦根各10克，3剂（少量多次服用）",
                 ur"方用：蝉衣、青黛(冲)、片姜黄各6克，大黄2克，生地榆、赤芍、丹参、茜草、小蓟、半枝莲、白花蛇舌草各10克。",

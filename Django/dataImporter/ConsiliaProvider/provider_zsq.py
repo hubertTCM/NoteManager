@@ -39,26 +39,58 @@ class Provider_zsq:
 		self.__componentsParser__ = ComponentsParser1(['，', '、'], SingleComponentParser1())
 		self.__prescriptionParser__ = PrescriptionParser1(self.__componentsParser__)
 		
-	def __isDescription__(self, line):
+		
+		comment_key_words = [ur"水煎服", 
+							ur"连服([两一二三四五六七八九十]+[剂付])", #连服三付而愈,
+							ur"连服[\d]+[剂付]",  #连服三付而愈
+							ur"服上方[一二三四五六七八九十]+[剂付]", #服上方三剂
+							
+							ur"又服[一二三四五六七八九十]+[剂付]",#又服三付而愈
+							ur"又服[\d]+[剂付]",#又服三付而愈
+							
+							ur"上方去", #上方去大黄、川楝子、大腹皮、槟榔，7剂
+							ur"\W*原方继进"#药后痛止眠安，仍以前法进退。忌食辛辣肥甘为要。原方继进10剂。
+							]
+		self.__comment_patterns__ = []
+		for key_word in comment_key_words:
+			self.__comment_patterns__.append( re.compile(ur"^[ ]*"+ key_word))
+			
+		self.__disease_name_pattern__ = re.compile(ur" *([^ ]+) +[一二三四五六七八九十]*")
+		
+	def __is_description__(self, line):
 		prescription_words = [ur"【初诊】"]
 		for key_word in prescription_words:
 			if re.compile(ur"^ *"+ key_word).search(line):
 				return True
 		return False
 		
-	def __getPrescription__(self, line):
-		comment_key_words = [ur"水煎服", 
-							ur"连服([两一二三四五六七八九十]+[剂付])", #连服三付而愈,
-							ur"连服[\d]+[剂付]",  #连服三付而愈
-							ur"服上方[一二三四五六七八九十]+[剂付]", #服上方三剂
-							ur"上方去", #上方去大黄、川楝子、大腹皮、槟榔，7剂
-							ur"\W*原方继进"#药后痛止眠安，仍以前法进退。忌食辛辣肥甘为要。原方继进10剂。
-							]
-		for key_word in comment_key_words:
-			if re.compile(ur"^[ ]*"+ key_word).search(line):
+	def __get_prescription__(self, line):
+# 		comment_key_words = [ur"水煎服", 
+# 							ur"连服([两一二三四五六七八九十]+[剂付])", #连服三付而愈,
+# 							ur"连服[\d]+[剂付]",  #连服三付而愈
+# 							ur"服上方[一二三四五六七八九十]+[剂付]", #服上方三剂
+# 							ur"上方去", #上方去大黄、川楝子、大腹皮、槟榔，7剂
+# 							ur"\W*原方继进"#药后痛止眠安，仍以前法进退。忌食辛辣肥甘为要。原方继进10剂。
+# 							]
+# 		for key_word in comment_key_words:
+# 			if re.compile(ur"^[ ]*"+ key_word).search(line):
+# 				return None
+
+		for pattern in self.__comment_patterns__:
+			if pattern.search(line):
 				return None
 
 		return self.__prescriptionParser__.getPrescription(line)
+	
+	def __extract_disease_names__(self, text):
+		names = []
+		for item in text.split(u'、'):
+			m = self.__disease_name_pattern__.match(item)
+			if m:
+				names.append(m.group(1))
+			else:
+				names.append(item.strip())
+		return names
 		
 	def getAll(self):			
 		sourceFile = codecs.open(self.__filePath__, 'r', 'utf-8', 'ignore')
@@ -96,7 +128,8 @@ class Provider_zsq:
 			if not currentName:
 				currentName = line
 				currentYiAn['diseaseNames'].append(currentCategory)
-				currentYiAn['diseaseNames'].extend(filter(lambda(x):len(x) > 0, [item.strip() for item in line.split(u'、')]))
+				currentYiAn['diseaseNames'].extend(self.__extract_disease_names__(line))
+				#currentYiAn['diseaseNames'].extend(filter(lambda(x):len(x) > 0, [item.strip() for item in line.split(u'、')]))
 				continue
 			
 			m = yiAnSplitPattern.match(line)
@@ -108,11 +141,11 @@ class Provider_zsq:
 				currentDetail['description'] += "\n" + line
 				continue
 			
-			if self.__isDescription__(line):
+			if self.__is_description__(line):
 				currentDetail['description'] += "\n" + line
 				continue
 				
-			prescription = self.__getPrescription__(line)#self.__prescriptionParser__.getPrescription(line)
+			prescription = self.__get_prescription__(line)#self.__prescriptionParser__.getPrescription(line)
 			if prescription:
 				currentDetail['prescriptions'].append(prescription)
 				continue
@@ -136,8 +169,8 @@ class Provider_zsq:
 
 if __name__ == "__main__":
 	provider = Provider_zsq()
-	provider.__getPrescription__(ur"水煎服，每日一剂。")
-	#Updater().update(provider.__filePath__)
+	provider.__get_prescription__(ur"水煎服，每日一剂。")
+	Updater().update(provider.__filePath__)
 	items = provider.getAll()		
 	writer = ConsiliaWriter()
 	writer.write_consilias(items)
