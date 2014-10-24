@@ -17,7 +17,7 @@ from dataImporter.PrescriptionParser.Parser import *
 
 class Provider_fzl:	
 	def __init__(self):
-		self._source_file_fullpath = os.path.dirname(__file__) + '\\fzl.txt'
+		self._source_file_fullpath = os.path.dirname(__file__) + '\\resources\\fzl.txt'
 		pattern = ur"(处方[一二三四五六七八九十]*)[:：；][ ]*([^处方]*)"
 		self.__prescritionNamePattern__ = re.compile(pattern)
 	
@@ -108,7 +108,7 @@ class Provider_fzl:
 			
 		if(index >= 0):
 			self.__exact_detail_situation__(sourceText[:index], detail)
-			detail[u'comments'] = sourceText[index:]				
+			detail[u'comment'] = sourceText[index:]				
 			return detail
 			
 		self.__exact_detail_situation__(sourceText, detail)		

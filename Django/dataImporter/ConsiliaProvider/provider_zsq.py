@@ -34,7 +34,7 @@ class Provider_zsq:
 		self.__categories__.extend([ur"头汗",ur"脱发",ur"牙疳",ur"白疙",ur"头疮",ur"赘疣"])
 		self.__categories__.extend([ur"癌", ur"瘿", ur"皮肤搔痒", ur"经期发热"])
 		
-		self.__source__ = { u'comeFrom': u'赵绍琴临证验案精选', u'author':u'赵绍琴' }
+		self.__source__ = { u'comeFrom': {'bookTitle':u'赵绍琴临证验案精选'}, u'author':u'赵绍琴' }
 		
 		self.__componentsParser__ = ComponentsParser1(['，', '、'], SingleComponentParser1())
 		self.__prescriptionParser__ = PrescriptionParser1(self.__componentsParser__)
@@ -57,10 +57,15 @@ class Provider_zsq:
 			
 		self.__disease_name_pattern__ = re.compile(ur" *([^ ]+) +[一二三四五六七八九十]*")
 		
+		self.__description_patterns__ = []
+		description_words = [ur"【初诊】"]
+		for key_word in description_words:
+			self.__description_patterns__.append(re.compile(ur"^ *"+ key_word))
+		self.__description_patterns__.append(re.compile(ur"^ *[^某]+某 *，*[男女] *，\d+岁")) #吕某，男，45岁
+		
 	def __is_description__(self, line):
-		prescription_words = [ur"【初诊】"]
-		for key_word in prescription_words:
-			if re.compile(ur"^ *"+ key_word).search(line):
+		for pattern in self.__description_patterns__:
+			if pattern.search(line):
 				return True
 		return False
 		
@@ -126,8 +131,14 @@ class Provider_zsq:
 				continue
 			
 			if not currentName:
-				currentName = line
 				currentYiAn['diseaseNames'].append(currentCategory)
+				
+				if self.__is_description__(line):
+					currentName = currentCategory
+					currentDetail['description'] += "\n" + line
+					continue
+				
+				currentName = line
 				currentYiAn['diseaseNames'].extend(self.__extract_disease_names__(line))
 				continue
 			

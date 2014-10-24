@@ -229,7 +229,10 @@ class ComponentsParser1:
             
         return components
 
-class PrescriptionQuantityFilter1:    
+class PrescriptionQuantityFilter1:  
+    def __init__(self):
+        self.__quantity_parser__ = QuantityParser2()
+          
     def splitByQuantity(self, text):
         otherText = text
         quantity = 0
@@ -242,8 +245,8 @@ class PrescriptionQuantityFilter1:
         if m:
             otherText = text[:m.start()]
 #             otherText = m.group(1)
-            quantityParser = QuantityParser2(text[m.start():])
-            quantity, unit = quantityParser.parse()
+            #quantityParser = QuantityParser2()
+            quantity, unit = self.__quantity_parser__.parse(text[m.start():])
         return quantity, unit, otherText
 
 class NameCommentSpliter1:
