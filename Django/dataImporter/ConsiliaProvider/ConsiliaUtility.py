@@ -1,9 +1,36 @@
-﻿# -*- coding: utf-8 -*-
+from dataImporter.prescriptionImporter import herbUtility
+# -*- coding: utf-8 -*-
 import sys
 import os
 import codecs
 import re
 from dataImporter.Utils.Utility import *
+from dataImporter.Utils.HerbUtil import *
+
+class Logger:
+    def __init__(self):
+        self.__file_name__ = os.path.dirname(__file__) + "\\debug.txt"
+        
+    def empty_log(self):
+        try:
+            os.remove(self.__file_name__)
+        except Exception,ex:
+            print ex
+            
+    def write_line(self, line):
+        self.__file_writer__ = codecs.open(self.__file_name__, 'a+', 'utf-8', 'ignore')
+        self.__file_writer__.write(line + "\n")
+        self.__file_writer__.close()
+        self.__file_writer__ = None
+    
+    def write_lines(self, lines):
+        self.__file_writer__ = codecs.open(self.__file_name__, 'a+', 'utf-8', 'ignore')
+        for line in lines:
+            self.__file_writer__.write(line + "\n")
+        self.__file_writer__.close()
+        self.__file_writer__ = None
+        
+        
 
 class PrescriptionWriter:
     def __init__(self):
@@ -39,6 +66,10 @@ class ConsiliaWriter:
         self.__write_single_detail__ = self.__write_single_detail_full__
         self.__prescription_writer__ = PrescriptionWriter()
         
+    def __write_line__(self, line):
+        if line and len(line) > 0:
+            self.__file_writer__.write(line + "\n")
+        
     def __write_if_contains_number__(self, text):
         items = text.split("\n")
         print text
@@ -60,11 +91,11 @@ class ConsiliaWriter:
 #         self.__file_writer__.write("comment:" + detail[u'comment'] + "\n")
         
         self.__file_writer__.write(str(detail[u'order']) + "\n")
-        self.__file_writer__.write(detail[u'description'] + "\n")
+        self.__write_line__(detail[u'description'])
         
         self.__prescription_writer__.write_prescriptions(detail['prescriptions'], self.__file_writer__)
         
-        self.__file_writer__.write(detail[u'comment'] + "\n")
+        self.__write_line__(detail[u'comment'])
         
     def __write_single_consilia__(self, consilia):
         self.__file_writer__.write(" ".join(consilia['diseaseNames']) + "\n")
@@ -79,6 +110,21 @@ class ConsiliaWriter:
     def write_contains_number(self, consilias):
         self.__write_single_detail__ = self.__write_single_detail_contains_number__
         self.write_consilias(consilias)
+    
+class ConsiliaHelper:
+    def get_un_imported_herbs(self, consilias):
+        herbs = []
+        for item in consilias:
+            for detail in item['details']:
+                for prescription in detail['prescriptions']:
+                    for component in prescription['components']:
+                        herb = component['medical']
+                        if not herbUtility.isHerb(herb) and not herb in herbs:
+                            herbs.append(herb)
+                            if len(herb) == 1:
+                                herbs.append(prescription['_debug'])
+        return herbs
+                        
     
 if __name__ == "__main__":
     print "no data"

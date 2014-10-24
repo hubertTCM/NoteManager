@@ -24,7 +24,8 @@ setup_environ(TCM.settings)
 
 class KnownAliasProvider:
     def get_all_alias_pair(self):
-        items = [(ur"飞滑石", ur"滑石"),
+        items = [(ur"生地榆",ur"地榆"),
+                (ur"飞滑石", ur"滑石"),
                  (ur"大附子", ur"附子"),
                 (ur"生附子", ur"附子"),
                 (ur"生石膏", ur"石膏"),

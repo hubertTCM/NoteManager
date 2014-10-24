@@ -15,7 +15,7 @@ append_ancestors_to_system_path(3)
 from dataImporter.Utils.Utility import *
 from dataImporter.PrescriptionParser.Parser import *
 from ConsiliaFileUpdater import Updater
-from ConsiliaOutput import *
+from ConsiliaUtility import *
 
 #TBD
 class Provider_zsq:	
@@ -111,7 +111,7 @@ class Provider_zsq:
 		for line in sourceFile.readlines():
 			line = line.strip(" \t\r\n")
 			if len(line) == 0:
-				if currentYiAn:
+				if currentYiAn and len(currentYiAn['diseaseNames']) > 0:
 					currentYiAn["details"].append(currentDetail)
 					items.append(currentYiAn)
 				
@@ -129,7 +129,6 @@ class Provider_zsq:
 				currentName = line
 				currentYiAn['diseaseNames'].append(currentCategory)
 				currentYiAn['diseaseNames'].extend(self.__extract_disease_names__(line))
-				#currentYiAn['diseaseNames'].extend(filter(lambda(x):len(x) > 0, [item.strip() for item in line.split(u'、')]))
 				continue
 			
 			m = yiAnSplitPattern.match(line)
@@ -161,8 +160,8 @@ class Provider_zsq:
 		
 		for yiAn in items:
 			for item in yiAn['details']:
-				item['description'].strip(" \n")
-				item['comment'].strip(" \n")
+				item['description'] = item['description'].strip(" \n")
+				item['comment'] = item['comment'].strip(" \n")
 				item.update(self.__source__)
 		
 		return items
@@ -174,6 +173,10 @@ if __name__ == "__main__":
 	items = provider.getAll()		
 	writer = ConsiliaWriter()
 	writer.write_consilias(items)
+	
+# 	herbs = ConsiliaHelper().get_un_imported_herbs(items)
+# 	logger = Logger()
+# 	logger.write_lines(herbs)
 
 # 	herbs = []
 # 	def shouldPrint(prescription):

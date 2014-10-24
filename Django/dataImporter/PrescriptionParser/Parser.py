@@ -13,7 +13,7 @@ def append_ancestors_to_system_path(levels):
         
 append_ancestors_to_system_path(3)
 
-from dataImporter.ConsiliaProvider.ConsiliaOutput import *
+from dataImporter.ConsiliaProvider.ConsiliaUtility import *
 from dataImporter.Utils.Utility import *
 from dataImporter.Utils.HerbUtil import *
 from ComponentAdjustor import *
