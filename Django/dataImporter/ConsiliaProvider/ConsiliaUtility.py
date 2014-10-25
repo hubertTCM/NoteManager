@@ -123,6 +123,7 @@ class ConsiliaHelper:
         return names
         
     def get_units(self, consilias):
+        valid_units = [ur"克", ur"个",ur"枚",ur"丸",ur"张", ur"角", ur"剂"]
         units = []
         for item in consilias:
             for detail in item['details']:
@@ -132,7 +133,7 @@ class ConsiliaHelper:
                         if unit: 
                             if unit not in units:
                                 units.append(unit)
-                        else:
+                        if not unit or not unit in valid_units:
                             units.append("** " + prescription['_debug'])
         return units
         

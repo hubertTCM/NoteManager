@@ -40,7 +40,9 @@ class Provider_zsq:
 		self.__prescriptionParser__ = PrescriptionParser1(self.__componentsParser__)
 		
 		
-		comment_key_words = [ur"水煎服", 
+		comment_key_words = [ur"水煎服",
+							ur"隔日服\d+剂，连服\d+", #隔日服1剂，连服4周
+							ur"服药\d+剂[\W\d]+改用[\W]+方法。",#服药7剂，热退，耳聋见轻。后以此方加炒山栀6克，又服7剂，耳聋大减，头晕乏力消失，唯口干欲饮，舌红苔少，改用益气养阴方法。 
 							ur"连服([两一二三四五六七八九十]+[剂付])", #连服三付而愈,
 							ur"连服[\d]+[剂付]",  #连服三付而愈
 							ur"服上方[一二三四五六七八九十]+[剂付]", #服上方三剂
@@ -61,7 +63,8 @@ class Provider_zsq:
 		description_words = [ur"【初诊】"]
 		for key_word in description_words:
 			self.__description_patterns__.append(re.compile(ur"^ *"+ key_word))
-		self.__description_patterns__.append(re.compile(ur"前药服后"))
+		self.__description_patterns__.append(re.compile(ur"前药服后"))		
+		self.__description_patterns__.append(re.compile(ur"于[\d]+年[\d]+月[\d]+日初诊"))#于1992年12月2日初诊
 		self.__description_patterns__.append(re.compile(ur"^ *[^某]+某 *，*[男女] *，\d+岁")) #吕某，男，45岁
 		self.__description_patterns__.append(re.compile(ur"诊断：")) #诊断：肠伤寒。
 		

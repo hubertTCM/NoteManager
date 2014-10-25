@@ -11,7 +11,7 @@ class Updater:
         sourceFileReader.close()
         
         items = {ur"烂喉（疒丹）痧":ur"烂喉痧",ur"肺结棱":ur"肺结核", ur"自芍":ur"白芍",ur"焦兰仙":ur"焦三仙"}
-        items.update({ur"疆蚕":ur"僵蚕", ur"值蚕":ur"僵蚕", ur"苏术":ur"苏木", ur"薏苡米":ur"薏苡仁", ur"葶苈于":ur"葶苈子"})
+        items.update({ur"疆蚕":ur"僵蚕", ur"值蚕":ur"僵蚕", ur"僖蚕" : ur"僵蚕", ur"苏术":ur"苏木", ur"薏苡米":ur"薏苡仁", ur"葶苈于":ur"葶苈子"})
         items.update({ur"蝉表":ur"蝉衣", ur"生地愉":ur"地榆", ur"白芥于":ur"白芥子", ur"戚灵仙":ur"威灵仙"})
         items.update({ur"川檩子":ur"川楝子", ur"川楝于":ur"川楝子", ur"漩吴萸":ur"淡吴萸", ur"阿胶球":ur"阿胶珠", ur"术香":ur"木香"})
         items.update({ur"郁盒":ur"郁金", ur"片僵蚕":ur"片僵黄", ur"太黄":ur"大黄",ur"朴骨脂":ur"补骨脂"})
