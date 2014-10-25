@@ -17,7 +17,7 @@ class Updater:
         items.update({ur"郁盒":ur"郁金", ur"片僵蚕":ur"片僵黄", ur"太黄":ur"大黄",ur"朴骨脂":ur"补骨脂"})
         items.update({ur"黄苓":ur"黄芩", ur"川樟子":ur"川楝子",ur"川草解":ur"川萆薢", ur"厚扑":ur"厚朴"})
         items.update({ur"粉月皮":ur"粉丹皮", ur"神血":ur"神曲", ur"阿腔":ur"阿胶", ur"瓜萎皮":ur"瓜蒌皮"})
-        items.update({ur"千姜":ur"干姜", ur"五睐子":ur"五味子", ur"复盆子":ur"覆盆子"})
+        items.update({ur"千姜":ur"干姜", ur"五睐子":ur"五味子", ur"复盆子":ur"覆盆子", ur"本香":ur"木香"})
         items.update({ur"1O":ur"10", ur"4 5克":ur"45克", ur"I克":ur"1克"})
         items.update({ur"1 5克":ur"15克", ur"1 8克":ur"18克", ur"O 6克":ur"0.6克",ur"z0克":ur"20克" })
         items.update({ur"克分冲":ur"克(分冲)"})

@@ -112,6 +112,30 @@ class ConsiliaWriter:
         self.write_consilias(consilias)
     
 class ConsiliaHelper:
+    def get_prescritpion_names(self, consilias):
+        names = []
+        for item in consilias:
+            for detail in item['details']:
+                for prescription in detail['prescriptions']:
+                    name = prescription['name']
+                    if name:
+                        names.append(name)
+        return names
+        
+    def get_units(self, consilias):
+        units = []
+        for item in consilias:
+            for detail in item['details']:
+                for prescription in detail['prescriptions']:
+                    for component in prescription['components']:
+                        unit = component['unit']
+                        if unit: 
+                            if unit not in units:
+                                units.append(unit)
+                        else:
+                            units.append("** " + prescription['_debug'])
+        return units
+        
     def get_un_imported_herbs(self, consilias):
         herbs = []
         for item in consilias:

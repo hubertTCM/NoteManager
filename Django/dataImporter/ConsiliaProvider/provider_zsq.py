@@ -61,7 +61,9 @@ class Provider_zsq:
 		description_words = [ur"【初诊】"]
 		for key_word in description_words:
 			self.__description_patterns__.append(re.compile(ur"^ *"+ key_word))
+		self.__description_patterns__.append(re.compile(ur"前药服后"))
 		self.__description_patterns__.append(re.compile(ur"^ *[^某]+某 *，*[男女] *，\d+岁")) #吕某，男，45岁
+		self.__description_patterns__.append(re.compile(ur"诊断：")) #诊断：肠伤寒。
 		
 	def __is_description__(self, line):
 		for pattern in self.__description_patterns__:
@@ -100,10 +102,11 @@ class Provider_zsq:
 	def getAll(self):			
 		sourceFile = codecs.open(self.__filePath__, 'r', 'utf-8', 'ignore')
 		
-		yiAnSplitPattern = re.compile(ur"【[复二三四五六七八九十]+诊】[:: ]*$")
-		
+		yiAnSplitPattern = re.compile(ur"^【[复二三四五六七八九十]+诊】[:: ]*")
+		yiAn_comment_pattern = re.compile(ur"^【按】")
 		items = []
 		
+		is_comment = False
 		currentYiAn = None
 		currentCategory = None
 		currentName = None
@@ -128,9 +131,11 @@ class Provider_zsq:
 			
 			if line in self.__categories__:
 				currentCategory = line
+				is_comment = False
 				continue
 			
 			if not currentName:
+				is_comment = False
 				currentYiAn['diseaseNames'].append(currentCategory)
 				
 				if self.__is_description__(line):
@@ -142,24 +147,33 @@ class Provider_zsq:
 				currentYiAn['diseaseNames'].extend(self.__extract_disease_names__(line))
 				continue
 			
-			m = yiAnSplitPattern.match(line)
+			m = yiAnSplitPattern.search(line)
 			if m:
+				is_comment = False
 				currentYiAn["details"].append(currentDetail)
-				
 				order += 1
 				currentDetail = createDetail(order)
 				currentDetail['description'] += "\n" + line
 				continue
 			
 			if self.__is_description__(line):
+				is_comment = False
 				currentDetail['description'] += "\n" + line
+				continue
+			
+			if yiAn_comment_pattern.search(line):
+				is_comment = True
+				currentDetail['comment'] += "\n" + line
+				continue
+			
+			if is_comment:
+				currentDetail['comment'] += "\n" + line
 				continue
 				
 			prescription = self.__get_prescription__(line)#self.__prescriptionParser__.getPrescription(line)
 			if prescription:
 				currentDetail['prescriptions'].append(prescription)
 				continue
-			
 			
 			if len(currentDetail['prescriptions']) == 0:
 				currentDetail['description'] += "\n" + line
@@ -170,10 +184,10 @@ class Provider_zsq:
 			sourceFile.close()
 		
 		for yiAn in items:
+			yiAn.update(self.__source__)
 			for item in yiAn['details']:
 				item['description'] = item['description'].strip(" \n")
 				item['comment'] = item['comment'].strip(" \n")
-				item.update(self.__source__)
 		
 		return items
 
@@ -185,9 +199,14 @@ if __name__ == "__main__":
 	writer = ConsiliaWriter()
 	writer.write_consilias(items)
 	
-# 	herbs = ConsiliaHelper().get_un_imported_herbs(items)
-# 	logger = Logger()
-# 	logger.write_lines(herbs)
+	h = ConsiliaHelper()
+	herbs = h.get_un_imported_herbs(items)
+	logger = Logger()
+	logger.write_lines(herbs)
+	logger.write_line("unit")
+	logger.write_lines(h.get_units(items))
+	logger.write_line("prescription name")
+	logger.write_lines(h.get_prescritpion_names(items))
 
 # 	herbs = []
 # 	def shouldPrint(prescription):

@@ -21,7 +21,7 @@ from ComponentAdjustor import *
 herbUtility = HerbUtility() 
 
 def convert_name(from_name):
-    items = [ur"药用", ur"方用", ur"处方", ur"拟方如下"]
+    items = [ur"药用", ur"方用", ur"处方", ur"拟方如下", ur"方药"]
     
     for item in items:
         if from_name.startswith(item):
@@ -283,8 +283,8 @@ class PrescriptionParser1:
         self.__ignore_quantity_patterns__ = []
         self.__ignore_quantity_patterns__.insert(0, re.compile(ur"水煎服，每日([\d]+[剂付])[。]?$"))
         self.__ignore_quantity_patterns__.insert(0, re.compile(ur"水煎服，每日([一二三四五六七八九十]+[剂付])[。]?$"))
-        quantityCommentPatterns = [ur"([服]*[一二三四五六七八九十]+[剂付])[。]*[（(]([\W]+)[)）]$",
-                                   ur"([服]*[\d]+[剂付])[。]*[（(]([\W]+)[)）]$"]
+        quantityCommentPatterns = [ur"([服]*[一二三四五六七八九十]+[剂付])[。]*[（(]([\W\d]+)[)）]$",
+                                   ur"([服]*[\d]+[剂付])[。]*[（(]([\W\d]+)[)）]$"]
         self.__quantityCommentPatterns__ = [re.compile(item) for item in quantityCommentPatterns]
         
         self.__quantityParsers__ = [QuantityParser1(), QuantityParser2()]
@@ -296,10 +296,16 @@ class PrescriptionParser1:
             return None
         
         #contains_unknown_herb = False
+        contains_unkown_herb = False
+        contains_unkown_quantity = False
         if check_medical:
             for component in components:
                 if not herbUtility.isHerb(component['medical']):
-                    return None
+                    contains_unkown_herb = True
+                if component['quantity'] == 0:
+                    contains_unkown_quantity = True
+            if contains_unkown_herb and contains_unkown_quantity:
+                return None
         return {"name": convert_name(name), "comment":comment, "quantity" : 0, "unit" : "", "components": components, "_debug":text}
             
     def getPrescription(self, text):
