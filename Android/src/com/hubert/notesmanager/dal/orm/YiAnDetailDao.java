@@ -13,7 +13,7 @@ public class YiAnDetailDao {
     private String mOrderColumnName = "order";
     private String mYiAnIdColumnName = "yiAnId";
     private String mDescriptionColumnName = "description";
-    private String mCommentsColumnName = "comments";
+    private String mCommentsColumnName = "comment";
     private String mComeFromIdColumnName = "comeFrom_id";
     
     private SQLiteDatabase mDatabase;
