@@ -31,22 +31,24 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f090010;
-        public static final int action_settings2=0x7f090011;
-        public static final int comment=0x7f09000f;
+        public static final int action_settings=0x7f090012;
+        public static final int action_settings2=0x7f090013;
+        public static final int comment=0x7f090010;
         public static final int container=0x7f090001;
         public static final int drawer_layout=0x7f090000;
-        public static final int herb_name=0x7f09000c;
+        public static final int herb_name=0x7f09000d;
         public static final int left_drawer=0x7f090002;
-        public static final int list_content=0x7f09000b;
+        public static final int list_content=0x7f09000c;
         public static final int listview_yian=0x7f090008;
         public static final int prescription_clauses=0x7f090005;
         public static final int prescription_components=0x7f090004;
         public static final int prescritiption_name=0x7f090003;
-        public static final int prescrptions=0x7f09000a;
-        public static final int quantity=0x7f09000d;
-        public static final int textview_clause_content=0x7f090009;
-        public static final int unit=0x7f09000e;
+        public static final int prescrptions=0x7f09000b;
+        public static final int quantity=0x7f09000e;
+        public static final int show_prescription=0x7f090009;
+        public static final int textview_clause_content=0x7f09000a;
+        public static final int unit=0x7f09000f;
+        public static final int yian_description=0x7f090011;
         public static final int yian_details=0x7f090007;
         public static final int yian_name=0x7f090006;
     }
@@ -55,11 +57,15 @@ public final class R {
         public static final int activity_prescription=0x7f030001;
         public static final int activity_yian_detail=0x7f030002;
         public static final int activity_yian_summary=0x7f030003;
-        public static final int cluase_detail=0x7f030004;
-        public static final int content_main=0x7f030005;
-        public static final int listview_category=0x7f030006;
-        public static final int prescription_component=0x7f030007;
-        public static final int yian_detail=0x7f030008;
+        public static final int btn_show_prescription=0x7f030004;
+        public static final int cluase_detail=0x7f030005;
+        public static final int content_main=0x7f030006;
+        public static final int listview_category=0x7f030007;
+        public static final int prescription_component=0x7f030008;
+        public static final int textview_description=0x7f030009;
+        public static final int yi_an_summary_item=0x7f03000a;
+        public static final int yian_detail=0x7f03000b;
+        public static final int yian_prescription=0x7f03000c;
     }
     public static final class menu {
         public static final int main=0x7f080000;
@@ -71,6 +77,7 @@ public final class R {
         public static final int action_settings=0x7f060002;
         public static final int app_name=0x7f060000;
         public static final int hello_world=0x7f060001;
+        public static final int show_prescription=0x7f060003;
     }
     public static final class style {
         /** 
@@ -99,5 +106,8 @@ public final class R {
  All customizations that are NOT specific to a particular API-level can go here. 
          */
         public static final int AppTheme=0x7f070001;
+        public static final int description=0x7f070003;
+        public static final int show_prescription=0x7f070004;
+        public static final int title=0x7f070002;
     }
 }

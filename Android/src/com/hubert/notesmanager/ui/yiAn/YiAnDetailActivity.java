@@ -24,7 +24,8 @@ public class YiAnDetailActivity extends Activity{
     
     private long mYiAnId;
     
-    private LinearLayout mLinearLayoutDetailsRoot;
+    private LinearLayout mLayoutDetails;
+    private LayoutInflater mInflater;
     
     private YiAnModel mYiAnModel;
     private List<YiAnDetailModel> mDetails;
@@ -32,6 +33,8 @@ public class YiAnDetailActivity extends Activity{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_yian_detail);
+        
+        mInflater = LayoutInflater.from(this);
         
         Intent intent = getIntent();
         mYiAnId = intent.getLongExtra(YiAnDetailActivity.YIAN_ID, 0);
@@ -45,7 +48,7 @@ public class YiAnDetailActivity extends Activity{
         
         TextView textView = (TextView)findViewById(R.id.yian_name);
         textView.setText(name);
-        mLinearLayoutDetailsRoot = (LinearLayout)findViewById(R.id.yian_details);
+        mLayoutDetails = (LinearLayout)findViewById(R.id.yian_details);
         
         showDescription();
     }
@@ -53,10 +56,10 @@ public class YiAnDetailActivity extends Activity{
     private void showDescription(){
         YiAnDetailModel detailModel = mDetails.get(mCurrentOrder);
         YiAnDetailEntity entity = detailModel.getEntity();
-        createTextView(entity.getDescription(), mLinearLayoutDetailsRoot);
+        createTextView(entity.getDescription(), mLayoutDetails);
 
         if (detailModel.getPrescriptions().size() > 0){
-            createButton(mLinearLayoutDetailsRoot);
+            createButton(mLayoutDetails);
         }
     }
     
@@ -66,10 +69,10 @@ public class YiAnDetailActivity extends Activity{
 
         YiAnDetailModel detailModel = mDetails.get(mCurrentOrder);
         for (YiAnPrescriptionModel prescription : detailModel.getPrescriptions()){
-            showPrescription(prescription);
+            showSinglePrescription(prescription);
         }
 
-        createTextView(detailModel.getEntity().getComments(), mLinearLayoutDetailsRoot);
+        createTextView(detailModel.getEntity().getComments(), mLayoutDetails);
         
         mCurrentOrder += 1;
         if (mCurrentOrder < mDetails.size()){
@@ -78,11 +81,11 @@ public class YiAnDetailActivity extends Activity{
         
     }
     
-    private void showPrescription(YiAnPrescriptionModel prescription){
+    private void showSinglePrescription(YiAnPrescriptionModel prescription){
        YiAnPrescriptionEntity prescriptionEntity = prescription.getEntity();
        String name = prescriptionEntity.getName();
        if (!Util.isNullOrEmpty(name)){
-           createTextView(name, mLinearLayoutDetailsRoot);
+           createTextView(name, mLayoutDetails);
        }
        
        String text = " ";
@@ -109,33 +112,28 @@ public class YiAnDetailActivity extends Activity{
        if (!Util.isNullOrEmpty(prescriptionEntity.getComment())){
            text += "\n" + prescriptionEntity.getComment();
        }
-       createTextView(text, mLinearLayoutDetailsRoot);
+       createTextView(text, mLayoutDetails);
     }
     
-    private void createTextView(String text, ViewGroup parent){
+    private TextView createTextView(String text, ViewGroup parent){
         if (Util.isNullOrEmpty(text)){
-            return;
+            return null;
         }
-        TextView txtView = new TextView(this);
-        txtView.setLayoutParams(new LayoutParams(
-                LayoutParams.FILL_PARENT,
-                LayoutParams.WRAP_CONTENT));
+        mInflater.inflate(R.layout.textview_description, parent);
+        TextView txtView = (TextView)parent.getChildAt(parent.getChildCount() - 1);
         txtView.setText(text);
-        parent.addView(txtView);
+        return txtView;
     }
     
     private void createButton (ViewGroup parent){
-        Button b = new Button(this);
-        b.setText("show prescription");
-        b.setOnClickListener(new OnClickListener(){
-            
+        mInflater.inflate(R.layout.btn_show_prescription, parent);
+        Button btn = (Button)parent.getChildAt(parent.getChildCount() - 1);
+        btn.setOnClickListener(new OnClickListener(){
             @Override
             public void onClick(View paramView){
                 showPrescriptions();
-                mLinearLayoutDetailsRoot.removeView(paramView);
+                mLayoutDetails.removeView(paramView);
             }
         });
-        
-        parent.addView(b);
     }
 }

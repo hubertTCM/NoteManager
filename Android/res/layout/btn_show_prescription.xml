@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Button xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/show_prescription"
+    style="@style/show_prescription"
+    android:text="@string/show_prescription">
+</Button>

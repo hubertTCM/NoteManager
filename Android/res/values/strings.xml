@@ -4,5 +4,6 @@
     <string name="app_name">TCM</string>
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="show_prescription">显示处方</string>
 
 </resources>

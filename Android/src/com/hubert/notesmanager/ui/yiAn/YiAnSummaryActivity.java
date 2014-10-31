@@ -39,7 +39,7 @@ public class YiAnSummaryActivity extends Activity{
             public View getView(int position, View convertView, ViewGroup parent){
                 TwoLineListItem item;
                 if(convertView == null){
-                    LayoutInflater inflater = (LayoutInflater)getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                    LayoutInflater inflater = LayoutInflater.from(YiAnSummaryActivity.this);
                     item = (TwoLineListItem)inflater.inflate(android.R.layout.simple_list_item_2, null);
                     item.getText2().setOnClickListener(new OnClickListener(){
                         @Override

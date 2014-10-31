@@ -11,9 +11,8 @@
         android:orientation="vertical" >
 
         <TextView
-            android:id="@+id/yian_name"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" >
+            style="@style/title"
+            android:id="@+id/yian_name">
         </TextView>
 
         <LinearLayout
