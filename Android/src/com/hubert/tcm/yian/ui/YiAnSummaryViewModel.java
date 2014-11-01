@@ -25,7 +25,7 @@ public class YiAnSummaryViewModel {
         YiAnDiseaseConnectionDao dao = new YiAnDiseaseConnectionDao(mDbHelper.getReadableDatabase());
         List<YiAnDiseaseConnectionEntity> items = dao.loadByYiAnId(mEntity.getId());
         for (YiAnDiseaseConnectionEntity item : items){
-            mName += item.getDiseaseId() + "�?";
+            mName += item.getDiseaseId() + "、";
         }
         mName = mName.substring(0, mName.length() - 1);
         return mName;

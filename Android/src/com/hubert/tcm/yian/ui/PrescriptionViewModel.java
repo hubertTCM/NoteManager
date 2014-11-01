@@ -26,9 +26,9 @@ public class PrescriptionViewModel {
         String name = entity.getName();
         updateTextView(R.id.name, name, root);
         
-        LinearLayout linearLayoutContainer = (LinearLayout) root.findViewById(R.id.composition_container);
+        ViewGroup compositionContainer = (ViewGroup) root.findViewById(R.id.composition_container);
         for (YiAnCompositionEntity composition : mData.getCompositions()){
-            createComposition(composition, linearLayoutContainer);
+            createComposition(composition, compositionContainer);
         }
         
         String text = "";
