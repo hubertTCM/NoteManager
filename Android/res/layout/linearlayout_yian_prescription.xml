@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <TextView
+        android:id="@+id/name"
+        style="@style/title" />
+
+    <LinearLayout
+        android:id="@+id/composition_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal" />
+    
+    <TextView
+        android:id="@+id/other"
+        style="@style/description" />
+
+</LinearLayout>

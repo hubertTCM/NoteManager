@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!--
         Base application theme, dependent on API level. This theme is replaced
@@ -24,7 +24,7 @@
         <item name="android:layout_marginLeft">3dip</item>
         <item name="android:layout_marginRight">3dip</item>
         <item name="android:layout_marginTop">8dip</item>
-        <item name="android:layout_marginBottom">2dip</item>
+        <item name="android:layout_marginBottom">5dip</item>
     </style>
     
     
@@ -32,10 +32,6 @@
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">left</item>
-        <item name="android:layout_marginLeft">10dip</item>
-        <item name="android:layout_marginRight">10dip</item>
-        <item name="android:layout_marginTop">2dip</item>
-        <item name="android:layout_marginBottom">1dip</item>
     </style>
 
     <style name="show_prescription">
@@ -43,6 +39,14 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:gravity">right</item>
         <item name="android:layout_gravity">right</item>
+    </style>
+    
+    <style name="herb" parent="@android:style/TextAppearance.Medium">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">left</item>
+        <item name="android:layout_margin">2dip</item>
+        <item name="android:textStyle">bold|italic</item>
     </style>
 
 </resources>
