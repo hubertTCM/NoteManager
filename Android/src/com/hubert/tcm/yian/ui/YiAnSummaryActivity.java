@@ -13,6 +13,9 @@ import android.view.View.OnClickListener;
 import android.widget.*;
 
 public class YiAnSummaryActivity extends Activity{
+    private Vector<YiAnSummaryModel> mAllSummary;
+    private ListView mListViewSummary;
+    
     public YiAnSummaryActivity(){
     }
     
@@ -24,15 +27,40 @@ public class YiAnSummaryActivity extends Activity{
         setUp();
     }
     
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu items for use in the action bar
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.activity_yian_summary, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle presses on the action bar items
+        switch (item.getItemId()) {
+            case R.id.action_shfulle:
+                Collections.sort(mAllSummary, new RandomComparer());
+                mListViewSummary.setAdapter(createSummaryAdapter());
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+    
     private  void setUp(){
-        ListView listView = (ListView)findViewById(R.id.listview_yian);
+        mListViewSummary = (ListView)findViewById(R.id.listview_yian);
         DatabaseHelper dbHelper = new DatabaseHelper(this);
         YiAnDetailDao dao = new YiAnDetailDao(dbHelper.getReadableDatabase());
-        Vector<YiAnSummaryViewModel> models = new Vector<YiAnSummaryViewModel>();
+        mAllSummary = new Vector<YiAnSummaryModel>();
         for (YiAnDetailEntity entity : dao.loadFirst()){
-            models.add(new YiAnSummaryViewModel(dbHelper, entity));
+            mAllSummary.add(new YiAnSummaryModel(dbHelper, entity));
         }
-        ArrayAdapter<YiAnSummaryViewModel> adapter = new ArrayAdapter<YiAnSummaryViewModel>(this,android.R.layout.simple_list_item_2, models){
+        mListViewSummary.setAdapter(createSummaryAdapter());
+    }
+
+    private ArrayAdapter<YiAnSummaryModel> createSummaryAdapter() {
+        ArrayAdapter<YiAnSummaryModel> adapter = new ArrayAdapter<YiAnSummaryModel>(this,android.R.layout.simple_list_item_2, mAllSummary){
             @Override
             public View getView(int position, View convertView, ViewGroup parent){
                 TwoLineListItem item;
@@ -42,7 +70,7 @@ public class YiAnSummaryActivity extends Activity{
                     item.getText2().setOnClickListener(new OnClickListener(){
                         @Override
                         public void onClick(View paramView){
-                            YiAnSummaryViewModel summaryModel = (YiAnSummaryViewModel)paramView.getTag();
+                            YiAnSummaryModel summaryModel = (YiAnSummaryModel)paramView.getTag();
                             YiAnDetailEntity entity = summaryModel.getEntity();
                             Intent intent = new Intent(YiAnSummaryActivity.this, YiAnDetailActivity.class);
                             intent.putExtra(YiAnDetailActivity.YIAN_ID, entity.getYiAnId());
@@ -53,13 +81,26 @@ public class YiAnSummaryActivity extends Activity{
                 }else{
                     item = (TwoLineListItem)convertView;
                 }
-                YiAnSummaryViewModel data = getItem(position);
+                YiAnSummaryModel data = getItem(position);
                 item.getText1().setText(data.getName());
                 item.getText2().setText(data.getSummary());
                 item.getText2().setTag(data);
                 return item;
             }
         };
-        listView.setAdapter(adapter);
+        return adapter;
+    }
+    
+    
+    private class RandomComparer implements Comparator<YiAnSummaryModel> {
+        @Override
+        public int compare(YiAnSummaryModel x, YiAnSummaryModel y) {
+            
+            long millis = System.currentTimeMillis() % 1000;
+            
+            Random random = new Random();
+            random.setSeed(millis);
+            return random.nextInt()%2;
+        }
     }
 }

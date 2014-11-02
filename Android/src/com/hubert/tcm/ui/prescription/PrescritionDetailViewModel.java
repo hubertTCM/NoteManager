@@ -21,7 +21,7 @@ public class PrescritionDetailViewModel {
     
     public PrescritionDetailViewModel(long id, Context context ){
         mContext = context;
-        mDbHelper = new DatabaseHelper(context);        
+        mDbHelper = new DatabaseHelper(context);
 
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         PrescriptionDao dao = new PrescriptionDao(db);

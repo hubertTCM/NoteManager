@@ -5,7 +5,7 @@ import java.util.*;
 import com.hubert.tcm.dal.DatabaseHelper;
 import com.hubert.tcm.dal.orm.*;
 
-public class YiAnSummaryViewModel {
+public class YiAnSummaryModel {
 
     private YiAnDetailEntity mEntity;
     private DatabaseHelper mDbHelper;
@@ -13,7 +13,7 @@ public class YiAnSummaryViewModel {
     private String mName = "";
     private String mSummary = "";
     
-    public YiAnSummaryViewModel(DatabaseHelper dbHelper, YiAnDetailEntity entity){
+    public YiAnSummaryModel(DatabaseHelper dbHelper, YiAnDetailEntity entity){
         mDbHelper = dbHelper;
         mEntity = entity;
     }
