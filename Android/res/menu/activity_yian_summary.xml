@@ -3,7 +3,7 @@
     tools:context="com.example.notesmanager.MainActivity" >
 
     <item android:id="@+id/action_shfulle"
-          android:icon="@drawable/ic_shuffle"
+          android:icon="@drawable/ic_action_shuffle"
           android:title="@string/action_shfulle"
           android:showAsAction="ifRoom"/>
 
