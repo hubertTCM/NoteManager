@@ -40,7 +40,7 @@ public class PrescriptionViewModel {
             text += entity.getUnit();
         }
         if (!Util.isNullOrEmpty(entity.getComment())){
-            text += "(" + entity.getComment() + ")";
+            text += "\n" + entity.getComment();
         }
         updateTextView(R.id.other, text, root);
         return root;

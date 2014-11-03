@@ -8,7 +8,7 @@
         android:id="@+id/name"
         style="@style/title" />
     
-    <com.hubert.tcm.ui.common.FlowLayout
+    <com.hubert.tcm.ui.common.WrapLayout
                 android:id="@+id/composition_container"
                 android:layout_marginLeft="5dip"
                 android:layout_width="fill_parent"
